@@ -1,0 +1,1814 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>鬼夜哭</title>
+<meta name="description" content="造字肉鸽：把字根拼成字，把鬼写哭。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<style>
+:root {
+  --bg: #0b0e13; --bg2: #131821; --bg3: #1b212c; --line: #2b3340; --text: #d9d3c3; --dim: #8a8f99;
+  --paper: #e9e0ca; --paper2: #cfc3a4; --ink: #15171b; --red: #c9402f; --gold: #dcb65e; --ghost: #d5e6ee;
+  --F: #de5a44; --W: #5a9bd0; --M: #68a86c; --J: #d9b45c; --T: #b58a57; --N: #9aa0aa;
+  --brush: "Ma Shan Zheng", "Kaiti SC", "STKaiti", "KaiTi", "Songti SC", serif;
+  --serif: "Noto Serif SC", "Songti SC", "SimSun", serif;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font-family: var(--serif); font-size: 15px; line-height: 1.6; overflow: hidden; }
+body { background: radial-gradient(900px 600px at 82% -8%, #24304166, transparent 70%), radial-gradient(700px 500px at 10% 110%, #2a1a1855, transparent 70%), var(--bg); }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+button:disabled { cursor: default; }
+small { font-size: .8em; color: var(--dim); }
+#bg { position: fixed; inset: 0; pointer-events: none; overflow: hidden; transition: opacity .6s; } body.run #bg { opacity: .45; }
+#bg i { position: absolute; font: normal 90px var(--brush); color: var(--ghost); opacity: 0; filter: blur(2px); animation: drift 26s linear infinite; }
+@keyframes drift { 0% { transform: translateY(30px); opacity: 0; } 20% { opacity: .07; } 80% { opacity: .07; } 100% { transform: translateY(-90px); opacity: 0; } }
+#fx { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 30; }
+#float { position: fixed; inset: 0; pointer-events: none; z-index: 40; }
+#app { position: relative; height: 100%; max-width: 980px; margin: 0 auto; display: flex; flex-direction: column; padding: 0 16px; }
+.body { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 14px 0 24px; scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+
+/* 按钮 */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 20px; border: 1px solid var(--line); border-radius: 3px; background: var(--bg2); color: var(--text); transition: .15s; white-space: nowrap; }
+.btn:hover:not(:disabled) { border-color: var(--paper2); background: var(--bg3); }
+.btn:disabled { opacity: .4; }
+.btn.red { background: var(--red); border-color: var(--red); color: #fff3e6; }
+.btn.red:hover:not(:disabled) { background: #dc4c39; border-color: #dc4c39; }
+.btn.sm { padding: 4px 12px; font-size: 13px; }
+
+/* 顶栏 */
+.hud { display: flex; align-items: center; gap: 14px; padding: 10px 0; border-bottom: 1px solid var(--line); flex: none; min-height: 50px; }
+.hud > span { white-space: nowrap; }
+.hud i { font-style: normal; display: inline-block; width: 20px; height: 20px; line-height: 20px; text-align: center; border-radius: 50%; font-size: 12px; margin-right: 5px; vertical-align: 2px; }
+.hud .hp i { background: var(--red); color: #fff; } .hud .hp { font-weight: 600; }
+.hud .gold i { background: var(--gold); color: var(--ink); } .hud .gold { color: var(--gold); font-weight: 600; }
+.hud .where { color: var(--dim); font-size: 13px; }
+.hud .boon { color: var(--paper2); font-size: 13px; border-bottom: 1px dotted var(--dim); }
+.hud .relics { display: flex; gap: 4px; flex-wrap: wrap; flex: 1; min-width: 0; }
+.relic { display: inline-block; width: 24px; height: 24px; line-height: 22px; text-align: center; border: 1px solid var(--red); color: #ef8d7d; border-radius: 3px; font: 15px/22px var(--brush); }
+.hud .btn { padding: 4px 11px; font-size: 13px; }
+
+/* 字根牌 */
+.card { position: relative; width: 62px; height: 82px; border-radius: 4px; background: linear-gradient(160deg, var(--paper), var(--paper2)); color: var(--ink); font: 44px/80px var(--brush); text-align: center; box-shadow: 0 2px 0 #0008, inset 0 0 0 1px #fff5; transition: transform .12s, box-shadow .12s, opacity .2s; flex: none; user-select: none; }
+.card::after { content: ""; position: absolute; left: 6px; top: 6px; width: 7px; height: 7px; border-radius: 50%; background: var(--c, transparent); }
+.card.up { box-shadow: 0 2px 0 #0008, inset 0 0 0 2px var(--red); }
+.card.up::before { content: "朱"; position: absolute; right: 3px; bottom: 3px; width: 15px; height: 15px; font: 10px/15px var(--serif); color: #fff; background: var(--red); border-radius: 2px; }
+.card.tmp { opacity: .82; outline: 1px dashed var(--ink); outline-offset: -5px; }
+.card.sel { transform: translateY(-16px); box-shadow: 0 0 0 2px var(--gold), 0 10px 18px #000a; }
+.card.sealed { filter: grayscale(1) brightness(.5); }
+.card.sealed::before { content: "封"; position: absolute; inset: 0; font: 26px/82px var(--brush); color: #ff8a78; background: none; width: auto; height: auto; }
+.card.bad { background: linear-gradient(160deg, #8d8577, #6c655a); color: #2a2320; }
+.card.used { opacity: 0; transform: translateY(-40px) scale(.8); }
+.card.sm { width: 44px; height: 58px; font-size: 31px; line-height: 57px; }
+.card.sm::after { left: 4px; top: 4px; width: 5px; height: 5px; }
+button.card:hover:not(.sealed):not(.sel) { transform: translateY(-5px); }
+.el-F { --c: var(--F); } .el-W { --c: var(--W); } .el-M { --c: var(--M); } .el-J { --c: var(--J); } .el-T { --c: var(--T); } .el- { --c: transparent; }
+
+/* 标题 */
+.title { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; text-align: center; padding: 20px 0; }
+.title h1 { margin: 0; font: normal 132px/1 var(--brush); color: var(--ghost); letter-spacing: .06em; text-shadow: 0 0 34px #9cc4d855, 0 0 3px #fff8; display: flex; gap: .08em; }
+.title h1 span { display: inline-block; animation: sway 5s ease-in-out infinite; } .title h1 span:nth-child(2) { animation-delay: -1.6s; } .title h1 span:nth-child(3) { animation-delay: -3.1s; color: #f0a092; text-shadow: 0 0 34px #c9402f77; }
+@keyframes sway { 50% { transform: translateY(-7px) rotate(-1.2deg); } }
+.title .quote { color: var(--dim); letter-spacing: .12em; } .title .quote small { display: block; margin-top: 4px; }
+.title .sub { margin: 0; color: var(--paper2); letter-spacing: .2em; }
+.title .menu { display: flex; flex-direction: column; gap: 10px; width: 230px; margin-top: 8px; }
+.title .menu .btn { justify-content: space-between; }
+.title .menu .btn.red { justify-content: center; font-size: 17px; letter-spacing: .3em; padding: 12px; }
+.title .foot { color: var(--dim); font-size: 13px; min-height: 20px; }
+
+h2 { font: normal 30px var(--brush); margin: 4px 0 2px; color: var(--paper); letter-spacing: .08em; }
+h3 { font-size: 13px; font-weight: 400; color: var(--dim); margin: 18px 0 8px; letter-spacing: .15em; display: flex; align-items: center; gap: 10px; }
+h3::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.lead { color: var(--dim); margin: 0 0 6px; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.opt { text-align: left; padding: 13px 15px; border: 1px solid var(--line); border-radius: 4px; background: var(--bg2); transition: .15s; display: block; width: 100%; }
+.opt:hover:not(:disabled) { border-color: var(--paper2); }
+.opt.on { border-color: var(--gold); background: #2a2516; }
+.opt:disabled { opacity: .42; }
+.opt b { font: normal 23px var(--brush); color: var(--paper); margin-right: 8px; } .opt p { margin: 3px 0 0; color: var(--dim); font-size: 13.5px; }
+.opt .mini { display: flex; gap: 3px; margin-top: 8px; flex-wrap: wrap; }
+.mini span { width: 23px; height: 28px; background: var(--paper); color: var(--ink); font: 18px/28px var(--brush); text-align: center; border-radius: 2px; }
+.foot-bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 18px; flex-wrap: wrap; }
+.stepper { display: flex; align-items: center; gap: 8px; color: var(--dim); font-size: 13px; } .stepper b { color: var(--text); min-width: 1.2em; text-align: center; }
+
+/* 地图 */
+.mapwrap { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+.map { display: block; width: 100%; max-width: 560px; margin: 0 auto; }
+.map .ed { stroke: var(--line); stroke-width: 2; stroke-dasharray: 3 6; fill: none; }
+.map .ed.on { stroke: var(--paper2); stroke-dasharray: none; opacity: .8; } .map .ed.can { stroke: var(--gold); opacity: .8; }
+.map .nd circle { fill: var(--bg2); stroke: var(--line); stroke-width: 1.5; }
+.map .nd text { font: 20px var(--brush); fill: var(--dim); text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+.map .nd.t-X text { fill: #ef8d7d; } .map .nd.t-S text { fill: var(--gold); } .map .nd.t-R text { fill: var(--M); } .map .nd.t-E text { fill: var(--W); }
+.map .nd.done circle { fill: var(--paper2); stroke: var(--paper2); } .map .nd.done text { fill: var(--ink); }
+.map .nd.now circle { stroke: var(--paper); stroke-width: 3; }
+.map .nd.can { cursor: pointer; } .map .nd.can circle { stroke: var(--gold); stroke-width: 2.5; animation: pulse 1.6s ease-in-out infinite; } .map .nd.can text { fill: var(--paper); }
+.map .nd.can:hover circle { fill: #3a3118; }
+@keyframes pulse { 50% { stroke-opacity: .35; } }
+.map .boss circle { fill: #2a1512; stroke: var(--red); } .map .boss text { font-size: 42px; fill: #f0a092; }
+.map .lbl { font: 12px var(--serif); fill: var(--dim); text-anchor: middle; }
+.legend { display: flex; gap: 14px; justify-content: center; color: var(--dim); font-size: 12.5px; padding: 8px 0 10px; flex-wrap: wrap; flex: none; }
+.legend b { font: 15px var(--brush); color: var(--text); margin-right: 3px; }
+
+/* 战斗 */
+.battle { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.foes { flex: 1; min-height: 150px; display: flex; justify-content: center; align-items: center; gap: clamp(6px, 3vw, 34px); padding: 6px 0; }
+.foe { position: relative; width: 150px; text-align: center; padding: 6px 4px 8px; border-radius: 6px; border: 1px solid transparent; transition: border-color .15s, opacity .4s, transform .4s, filter .4s; cursor: pointer; }
+.foe.tg { border-color: #dcb65e66; background: #dcb65e0a; }
+.foe.tg::before { content: "▾"; position: absolute; top: -13px; left: 0; right: 0; color: var(--gold); font-size: 13px; }
+.foe .glyph { font: 104px/1.08 var(--brush); color: var(--ghost); text-shadow: 0 0 26px #a8cfe266, 0 0 2px #fff; animation: hover 4.2s ease-in-out infinite; }
+.foe.boss .glyph { font-size: 136px; color: #f4c9bf; text-shadow: 0 0 34px #c9402f88, 0 0 2px #fff; } .foe.boss { width: 220px; }
+.foe.elite .glyph { color: #f1dfb2; text-shadow: 0 0 26px #dcb65e77, 0 0 2px #fff; }
+.foe.small .glyph { font-size: 64px; } .foe.small { width: 96px; }
+.foe:nth-child(2) .glyph { animation-delay: -1.3s; } .foe:nth-child(3) .glyph { animation-delay: -2.6s; }
+@keyframes hover { 50% { transform: translateY(-6px); } }
+.foe.shake .glyph { animation: shake .28s; } @keyframes shake { 20% { transform: translate(-7px, 2px) rotate(-3deg); } 50% { transform: translate(6px, -2px) rotate(2deg); } 80% { transform: translate(-3px, 1px); } }
+.foe.lunge .glyph { animation: lunge .34s; } @keyframes lunge { 40% { transform: translateY(34px) scale(1.14); } }
+.foe.dying { opacity: 0; transform: translateY(-24px) scale(1.25); filter: blur(10px); pointer-events: none; }
+.foe.dead { visibility: hidden; }
+.foe.spawn { animation: fadein .4s; } @keyframes fadein { from { opacity: 0; transform: scale(.6); } }
+.intent { display: inline-flex; gap: 6px; align-items: center; height: 24px; padding: 0 9px; border-radius: 12px; background: var(--bg3); border: 1px solid var(--line); font-size: 13px; white-space: nowrap; }
+.intent b { color: #ff9a86; font-weight: 600; } .intent em { font-style: normal; color: var(--paper2); } .intent.stun { color: var(--dim); }
+.fname { font-size: 13px; color: var(--dim); } .fname em { font-style: normal; font-size: 11.5px; margin-left: 5px; padding: 0 4px; border-radius: 2px; border: 1px solid; color: var(--c); }
+.hpbar { position: relative; text-align: center; height: 15px; margin: 4px auto 0; max-width: 150px; background: #000a; border: 1px solid var(--line); border-radius: 2px; overflow: hidden; }
+.hpbar i { position: absolute; left: 0; top: 0; bottom: 0; background: linear-gradient(#b23a2c, #8c2a20); transition: width .25s; }
+.hpbar span { position: relative; font-size: 11px; line-height: 13px; display: block; color: #fff; text-shadow: 0 1px 1px #000; }
+.sts { display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; margin-top: 5px; min-height: 21px; }
+.st { font-size: 12px; line-height: 19px; padding: 0 6px; border-radius: 2px; background: var(--bg3); border: 1px solid var(--line); white-space: nowrap; }
+.st.good { border-color: #68a86c88; color: #a5d6a8; } .st.bad { border-color: #c9402f88; color: #f0a092; } .st.blk { border-color: #5a9bd088; color: #a9cfee; } .st.nx { border-style: dashed; color: var(--dim); }
+
+.me { flex: none; display: flex; align-items: center; gap: 10px; padding: 6px 0; flex-wrap: wrap; }
+.me .hpbar { width: 170px; max-width: 40vw; margin: 0; height: 18px; flex: none; } .me .hpbar span { line-height: 16px; font-size: 12px; }
+.me .sts { margin: 0; justify-content: flex-start; flex: 1; }
+.ally { font: 17px/24px var(--brush); width: 26px; height: 26px; text-align: center; border-radius: 50%; border: 1px solid var(--gold); color: var(--gold); display: inline-block; }
+
+.desk { flex: none; background: var(--bg2); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; min-height: 104px; display: flex; gap: 12px; align-items: stretch; }
+.desk .hintbox { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 7px; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.chip { font: 21px/30px var(--brush); width: 34px; height: 34px; border-radius: 3px; border: 1px solid var(--line); background: var(--bg3); color: var(--paper); text-align: center; position: relative; }
+.chip:hover { border-color: var(--gold); } .chip.n3 { border-color: #dcb65e88; } .chip.hintd { border-style: dashed; color: var(--gold); }
+.chip.el-F, .chip.el-W, .chip.el-M, .chip.el-J, .chip.el-T { box-shadow: inset 0 -2px 0 var(--c); }
+.unk { color: var(--gold); font-size: 13px; } .muted { color: var(--dim); font-size: 13px; }
+.res { flex: 1; min-width: 0; display: flex; gap: 12px; align-items: center; text-align: left; padding: 4px 8px 4px 4px; border-radius: 5px; border: 1px solid transparent; transition: .12s; }
+button.res:hover:not(:disabled) { border-color: var(--gold); background: #dcb65e12; }
+.res .big { flex: none; width: 76px; height: 76px; border-radius: 5px; background: linear-gradient(160deg, var(--paper), var(--paper2)); color: var(--ink); font: 58px/74px var(--brush); text-align: center; box-shadow: inset 0 -4px 0 var(--c, transparent); position: relative; }
+.res .big.new::after { content: "新"; position: absolute; right: -6px; top: -6px; width: 20px; height: 20px; border-radius: 50%; background: var(--red); color: #fff; font: 12px/20px var(--serif); }
+.res .txt { min-width: 0; } .res .txt b { color: var(--paper); font-weight: 600; } .res .txt b small { margin-left: 8px; font-weight: 400; }
+.res .txt p { margin: 2px 0 0; font-size: 13.5px; line-height: 1.5; } .res .txt .note { color: var(--dim); font-size: 12px; }
+.res .go { flex: none; margin-left: auto; padding: 6px 13px; border-radius: 3px; background: var(--red); color: #fff3e6; font-size: 14px; letter-spacing: .2em; }
+.res:disabled .go { background: var(--line); color: var(--dim); }
+.res.nope { justify-content: center; color: var(--dim); } .res.wig { animation: shake .25s; }
+.resl { flex: 1; min-width: 0; display: flex; gap: 6px; flex-direction: column; justify-content: center; }
+.resl.multi .res { padding: 2px 8px 2px 2px; } .resl.multi .big { width: 46px; height: 46px; font-size: 34px; line-height: 45px; } .resl.multi .txt p { font-size: 13px; }
+.gl { font-size: 12px; color: var(--dim); margin-top: 3px; } .gl b { color: var(--paper2); font-weight: 400; }
+
+.handbar { flex: none; display: flex; align-items: flex-end; gap: 12px; padding: 24px 0 14px; }
+.hand { flex: 1; min-width: 0; display: flex; gap: 7px; flex-wrap: wrap; justify-content: center; row-gap: 22px; }
+.side { flex: none; display: flex; flex-direction: column; align-items: center; gap: 7px; width: 96px; }
+.inks { display: flex; gap: 5px; align-items: center; height: 22px; } .inks i { width: 15px; height: 15px; border-radius: 50%; border: 1.5px solid var(--paper2); } .inks i.f { background: var(--paper); box-shadow: 0 0 8px #e9e0ca88; } .inks b { font-size: 13px; color: var(--dim); font-weight: 400; margin-right: 2px; }
+.piles { font-size: 12px; color: var(--dim); white-space: nowrap; }
+.ask { text-align: center; color: var(--gold); padding: 6px; flex: 1; align-self: center; }
+
+.castglyph { position: absolute; left: 50%; top: 40%; font: 190px/1 var(--brush); color: var(--paper); text-shadow: 0 0 40px var(--c, #fff8), 0 0 4px #000; transform: translate(-50%, -50%); animation: write .62s ease-out forwards; white-space: nowrap; }
+.castglyph.sub { font-size: 120px; animation-duration: .45s; } .castglyph small { font: 40px var(--brush); color: var(--gold); margin-left: 6px; }
+@keyframes write { 0% { opacity: 0; filter: blur(14px); transform: translate(-50%, -50%) scale(1.7); } 30% { opacity: 1; filter: blur(0); transform: translate(-50%, -50%) scale(1); } 62% { opacity: 1; transform: translate(-50%, -50%) scale(.97); } 100% { opacity: 0; filter: blur(5px); transform: translate(-50%, -78%) scale(.86); } }
+.flt { position: absolute; font: 600 24px var(--serif); text-shadow: 0 2px 4px #000, 0 0 2px #000; transform: translate(-50%, -50%); animation: rise .85s ease-out forwards; white-space: nowrap; }
+@keyframes rise { 0% { opacity: 0; margin-top: 8px; } 15% { opacity: 1; } 70% { opacity: 1; } 100% { opacity: 0; margin-top: -52px; } }
+.flt.dmg { color: #fff; } .flt.crit { color: #ffd76a; font-size: 31px; } .flt.res { color: #9aa0aa; font-size: 19px; } .flt.dot { color: #ffab7a; font-size: 19px; }
+.flt.pdmg { color: #ff7d6b; font-size: 31px; } .flt.blk { color: #a9cfee; font-size: 19px; } .flt.heal { color: #a5d6a8; } .flt.gold { color: var(--gold); font-size: 19px; }
+.flt.note { color: var(--paper); font: 27px var(--brush); } .flt.bad { color: #ff9a86; font: 23px var(--brush); } .flt.name { color: #ffb9a8; font: 23px var(--brush); }
+.banner { position: absolute; left: 50%; top: 13%; transform: translateX(-50%); padding: 8px 22px; background: #0b0e13ee; border: 1px solid var(--gold); border-radius: 4px; text-align: center; animation: ban 1.9s ease-out forwards; white-space: nowrap; }
+.banner b { font: 33px var(--brush); color: var(--gold); margin: 0 6px; vertical-align: -4px; } .banner small { display: block; color: var(--dim); }
+.banner.turn { border-color: var(--line); top: 34%; animation-duration: .95s; color: var(--paper2); letter-spacing: .3em; }
+@keyframes ban { 0% { opacity: 0; margin-top: 12px; } 12% { opacity: 1; margin-top: 0; } 80% { opacity: 1; } 100% { opacity: 0; } }
+.quake { animation: quake .3s; } @keyframes quake { 25% { transform: translate(-6px, 3px); } 50% { transform: translate(5px, -3px); } 75% { transform: translate(-3px, 1px); } }
+
+/* 奖励、商店、事件 */
+.pick { display: flex; gap: 12px; flex-wrap: wrap; }
+.pc { width: 176px; padding: 12px; border: 1px solid var(--line); border-radius: 5px; background: var(--bg2); text-align: left; display: flex; flex-direction: column; gap: 8px; transition: .15s; }
+button.pc:hover:not(:disabled) { border-color: var(--gold); } .pc:disabled { opacity: .4; } .pc.taken { border-color: var(--gold); background: #2a2516; opacity: 1 !important; }
+.pc .top { display: flex; gap: 10px; align-items: center; } .pc p { margin: 0; font-size: 12.5px; color: var(--dim); line-height: 1.5; }
+.pc .syn { font: 18px var(--brush); color: var(--paper); letter-spacing: 2px; word-break: break-all; } .pc .syn u { text-decoration: none; color: var(--gold); }
+.pc .price { color: var(--gold); font-weight: 600; margin-left: auto; white-space: nowrap; } .pc .top > span:nth-child(2) { flex: 1; min-width: 0; } .pc .price.no { color: #f0a092; }
+.pc .rn { font: 23px var(--brush); color: #ef8d7d; }
+.got { border: 1px solid var(--line); border-left: 3px solid var(--red); padding: 9px 14px; background: var(--bg2); border-radius: 3px; margin: 10px 0; } .got b { color: #ef8d7d; }
+.evt { max-width: 620px; margin: 0 auto; } .evt .x { font-size: 16.5px; line-height: 2; color: var(--paper); margin: 12px 0 18px; }
+.evt .opts { display: flex; flex-direction: column; gap: 9px; } .evt .out { padding: 14px 16px; border-left: 3px solid var(--gold); background: var(--bg2); margin-bottom: 16px; }
+.center { text-align: center; }
+
+/* 字典 */
+.dgrid { display: flex; flex-wrap: wrap; gap: 5px; }
+.dt { width: 40px; height: 40px; border-radius: 3px; font: 25px/38px var(--brush); text-align: center; border: 1px solid var(--line); background: var(--bg2); color: #454c58; }
+.dt.k { background: var(--paper); color: var(--ink); border-color: var(--paper); box-shadow: inset 0 -3px 0 var(--c, transparent); } .dt.h { color: var(--gold); border-style: dashed; border-color: #dcb65e88; }
+.dt.on { outline: 2px solid var(--gold); outline-offset: 1px; }
+.ddetail { position: sticky; top: 0; z-index: 2; background: var(--bg); padding: 8px 0 10px; border-bottom: 1px solid var(--line); margin-bottom: 4px; min-height: 104px; display: flex; gap: 14px; align-items: center; }
+.ddetail .big { flex: none; width: 84px; height: 84px; border-radius: 5px; background: var(--paper); color: var(--ink); font: 64px/82px var(--brush); text-align: center; box-shadow: inset 0 -4px 0 var(--c, transparent); }
+.ddetail .big.u { background: var(--bg2); color: #454c58; border: 1px solid var(--line); }
+.ddetail p { margin: 2px 0; } .bar { height: 5px; background: var(--bg3); border-radius: 3px; overflow: hidden; margin: 8px 0 2px; } .bar i { display: block; height: 100%; background: var(--gold); }
+
+/* 弹层 */
+#modal { position: fixed; inset: 0; z-index: 60; background: #05070acc; display: none; align-items: center; justify-content: center; padding: 16px; }
+#modal.on { display: flex; }
+.dlg { background: var(--bg2); border: 1px solid var(--line); border-radius: 6px; max-width: 640px; width: 100%; max-height: 88vh; overflow-y: auto; padding: 18px 20px; }
+.dlg h2 { margin-top: 0; } .dlg ul { padding-left: 1.2em; margin: 8px 0; } .dlg li { margin: 7px 0; } .dlg li b { color: var(--gold); font-weight: 400; }
+.dlg .cards { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0; }
+.dlg .acts { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
+.dlg .menu { display: flex; flex-direction: column; gap: 9px; }
+#tip { position: fixed; z-index: 80; display: none; max-width: 270px; padding: 8px 11px; background: #05070af5; border: 1px solid var(--paper2); border-radius: 4px; font-size: 13px; line-height: 1.55; pointer-events: none; color: var(--text); }
+#tip b { color: var(--gold); font-weight: 400; } #tip hr { border: 0; border-top: 1px solid var(--line); margin: 6px 0; }
+
+.over { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 10px; padding: 20px 0; overflow-y: auto; }
+.over h1 { font: normal 92px/1.1 var(--brush); margin: 0; color: var(--ghost); text-shadow: 0 0 30px #9cc4d855; } .over.win h1 { color: var(--gold); text-shadow: 0 0 30px #dcb65e66; }
+.over .stats { display: flex; gap: 22px; flex-wrap: wrap; justify-content: center; margin: 8px 0; } .over .stats div b { display: block; font-size: 25px; color: var(--paper); font-weight: 600; } .over .stats div { color: var(--dim); font-size: 13px; }
+.over .newc { font: 25px var(--brush); color: var(--gold); letter-spacing: 4px; max-width: 560px; word-break: break-all; }
+
+@media (max-width: 640px) {
+  html, body { font-size: 14px; }
+  .title h1 { font-size: 86px; }
+  .hud { gap: 9px; flex-wrap: wrap; row-gap: 4px; } .hud .where { display: none; }
+  .card { width: 47px; height: 62px; font-size: 33px; line-height: 61px; } .card.sel { transform: translateY(-11px); } .card.sealed::before { line-height: 62px; }
+  .foe { width: 108px; } .foe .glyph { font-size: 68px; } .foe.boss .glyph { font-size: 100px; } .foe.boss { width: 170px; } .foe.small .glyph { font-size: 44px; } .foe.small { width: 70px; }
+  .intent { font-size: 12px; padding: 0 6px; }
+  .desk { padding: 8px; min-height: 96px; } .res .big { width: 58px; height: 58px; font-size: 43px; line-height: 57px; } .res { gap: 8px; } .res .go { padding: 5px 9px; letter-spacing: 0; }
+  .handbar { flex-direction: column; align-items: stretch; padding-top: 18px; gap: 10px; } .hand { row-gap: 16px; gap: 5px; }
+  .side { flex-direction: row; width: auto; justify-content: space-between; }
+  .castglyph { font-size: 130px; } .pc { width: calc(50% - 6px); }
+  .foes { min-height: 120px; }
+}
+@media (max-height: 700px) and (min-width: 641px) { .foe .glyph { font-size: 78px; } .foe.boss .glyph { font-size: 104px; } .handbar { padding-top: 20px; } }
+@media (prefers-reduced-motion: reduce) { * { animation-duration: .01s !important; transition-duration: .01s !important; } }
+</style>
+</head>
+<body>
+<div id="bg"></div>
+<div id="app"></div>
+<canvas id="fx"></canvas>
+<div id="float"></div>
+<div id="modal"></div>
+<div id="tip"></div>
+<script>
+'use strict';
+// 鬼夜哭 · 数据
+
+const ELN = { F: '火', W: '水', M: '木', J: '金', T: '土' };
+
+// 字根：[五行, 稀有度(1常见 2少见 3罕见 4只能从鬼身上拆), 单写效果]
+const COMPS = {
+  火: ['F', 1, 'hit 4;burn 2'], 水: ['W', 1, 'hit 5;wet'], 木: ['M', 1, 'blk 3;heal 2'], 金: ['J', 1, 'hit 6;gold 1'], 土: ['T', 1, 'blk 6'],
+  日: ['F', 1, 'all 3'], 月: ['W', 1, 'blk 3;weak 1'], 山: ['T', 1, 'blk 4;thorn 2'], 石: ['T', 1, 'hit 6'], 田: ['T', 1, 'heal 3'],
+  雨: ['W', 2, 'all 2;wetAll'], 云: ['W', 2, 'draw 1;blk 2'],
+  人: ['N', 1, 'hits 2 2'], 口: ['N', 1, 'hit 3;vul 1'], 心: ['N', 1, 'draw 1;heal 1'], 手: ['N', 1, 'hit 5'], 目: ['N', 1, 'vul 2'],
+  女: ['N', 1, 'heal 2;blk 2'], 子: ['N', 1, 'hit 3;blk 3'], 力: ['N', 1, 'hit 3;tstr 2'],
+  刀: ['J', 1, 'hit 7'], 门: ['N', 1, 'blk 5'], 宀: ['N', 2, 'blk 4;heal 1'], 寸: ['N', 1, 'blk 3;draw 1'], 工: ['N', 1, 'blk 4;nblk 3'],
+  贝: ['J', 1, 'gold 3'], 王: ['N', 2, 'hit 4;act 1'], 白: ['N', 2, 'blk 3;cleanse'],
+  禾: ['M', 1, 'heal 2;gold 1'], 艹: ['M', 1, 'heal 2;blk 2'],
+  马: ['N', 2, 'hit 5;draw 1'], 鸟: ['N', 2, 'pierce 4'], 虫: ['N', 1, 'hit 2;poison 1'], 犬: ['N', 1, 'hits 3 2'], 牛: ['N', 2, 'hit 8'], 羊: ['N', 2, 'heal 2;blk 3'],
+  大: ['N', 1, 'hit 6'], 小: ['N', 1, 'hit 3;blk 2'], 少: ['N', 1, 'hit 4;weak 1'], 一: ['N', 1, 'hit 3;draw 1'], 十: ['N', 1, 'hit 3;blk 3'],
+  不: ['N', 2, 'weak 1;blk 3'], 止: ['N', 2, 'blk 6'], 立: ['N', 1, 'blk 5'], 言: ['N', 1, 'weak 1;vul 1'],
+  亡: ['N', 3, 'selfdmg 3;hit 13'], 又: ['N', 2, 'draw 2'], 辶: ['N', 2, 'blk 3;draw 1'], 隹: ['N', 2, 'hit 4;ndraw 1'], 厂: ['N', 2, 'blk 5;thorn 1'],
+  鬼: ['N', 4, 'burnAll 4;selfdmg 1'],
+};
+
+// 合字：[字, 字根, 五行, 效果, 一句话]
+const CHARS = [
+  // ── 火
+  ['炎', '火火', 'F', 'hit 8;burn 4', '两火相叠'],
+  ['焱', '火火火', 'F', 'all 10;burnAll 5', '三火冲天'],
+  ['灿', '火山', 'F', 'all 6;vulAll 1', '火照山明'],
+  ['秋', '禾火', 'J', 'heal 4;gold 4', '禾熟如火，秋属金'],
+  ['愁', '禾火心', 'N', 'weakAll 2;vulAll 1', '秋在心上'],
+  ['伙', '人火', 'N', 'ally 伙;tstr 1', '围火为伴'],
+  ['灭', '一火', 'F', 'exec 25 8', '一覆火熄'],
+  ['灶', '火土', 'F', 'heal 4;regen 3', '垒土生火'],
+  ['炒', '火少', 'F', 'fry;hit 4', '火上翻炒'],
+  ['淡', '水火火', 'W', 'weak 3;cleanse', '水浇炎则淡'],
+  ['谈', '言火火', 'N', 'stun;selfweak 1', '谈判'],
+  ['烛', '火虫', 'F', 'draw 2;vul 1', '秉烛'],
+  ['杰', '木火', 'F', 'str 2', '木下有火'],
+  ['焚', '木木火', 'F', 'burn 12;burnAll 3', '林下起火'],
+  ['灾', '宀火', 'F', 'all 16;selfdmg 4', '屋下有火'],
+  ['烟', '火口大', 'F', 'weakAll 2;dodge 1', '因火成烟'],
+  ['焦', '隹火', 'F', 'scorch', '鸟在火上'],
+  ['羔', '羊火', 'N', 'selfdmg 3;ink 2', '献祭之羊'],
+  ['芯', '艹心', 'F', 'burnAll 3;draw 1', '草心作灯芯'],
+  // ── 水
+  ['淼', '水水水', 'W', 'all 12;wetAll;weakAll 1', '三水漫漫'],
+  ['沐', '水木', 'W', 'heal 5;cleanse', '以水濯木'],
+  ['泪', '水目', 'W', 'hit 5;weak 2;wet', '目中有水'],
+  ['泉', '白水', 'W', 'regen 5', '白水出山'],
+  ['沙', '水少', 'T', 'hit 4;dodge 1', '水少见沙'],
+  ['江', '水工', 'W', 'all 8;wetAll', '工于治水'],
+  ['洋', '水羊', 'W', 'all 5;wetAll;blk 5', '望洋'],
+  ['汁', '水十', 'W', 'ink 2', '墨汁'],
+  ['沁', '水心', 'W', 'heal 4;draw 1', '沁人心脾'],
+  ['汪', '水王', 'W', 'hits 3 3', '汪汪汪'],
+  ['泣', '水立', 'W', 'weakAll 2;wetAll', '立而垂泪'],
+  ['淋', '水木木', 'W', 'all 10;wetAll;cleanse', '雨打林梢'],
+  ['沼', '水口刀', 'W', 'stun;poison 2', '召水成泽'],
+  ['浊', '水虫', 'W', 'poison 2;wet', '水中生虫'],
+  ['涉', '水止少', 'W', 'dodge 1;draw 2', '步水而过'],
+  ['消', '水小月', 'W', 'strip;hit 10', '冰消瓦解'],
+  ['浩', '水牛口', 'W', 'all 14;wetAll', '浩浩汤汤'],
+  ['汉', '水又', 'N', 'str 1;blk 5', '好汉'],
+  ['测', '水贝刀', 'N', 'draw 3;vul 2', '以则量水'],
+  ['鸿', '水工鸟', 'W', 'draw 2;ink 1;gold 5', '江上飞鸟'],
+  ['茫', '艹水亡', 'W', 'weakAll 2;vulAll 2', '烟波茫茫'],
+  // ── 木
+  ['林', '木木', 'M', 'blk 9;regen 2', '双木成林'],
+  ['森', '木木木', 'M', 'blk 18;thorn 3;regen 3', '三木成森'],
+  ['休', '人木', 'M', 'heal 7', '人倚木而息'],
+  ['相', '木目', 'N', 'vul 1;weak 1;draw 1', '以目观木'],
+  ['想', '木目心', 'N', 'draw 3;ink 1', '相由心生'],
+  ['李', '木子', 'M', 'reflect 1;heal 2', '李代桃僵'],
+  ['杏', '木口', 'M', 'heal 5;regen 2', '杏林春暖'],
+  ['呆', '木口', 'N', 'weak 3', '呆若木鸡'],
+  ['困', '木口', 'N', 'stun', '木在围中'],
+  ['杜', '木土', 'M', 'blk 6;ward 1', '防微杜渐'],
+  ['村', '木寸', 'M', 'village', '柳暗花明又一村'],
+  ['本', '木一', 'M', 'root', '木下一横为本'],
+  ['末', '木一', 'N', 'last 10', '木上一横为末'],
+  ['未', '木一', 'N', 'nink 1;ndraw 2', '未雨绸缪'],
+  ['柏', '木白', 'M', 'blk 6;thorn 2', '松柏后凋'],
+  ['闲', '门木', 'N', 'heal 3;draw 2', '门中有木'],
+  ['果', '田木', 'M', 'heal 6;gold 2', '木上结果'],
+  ['枭', '木鸟', 'N', 'owl 12', '鸟踞木上'],
+  ['杯', '木不', 'N', 'heal 3;free', '一杯在手'],
+  ['权', '木又', 'N', 'str 1;ink 1', '权衡'],
+  ['样', '木羊', 'N', 'again', '照样再来'],
+  ['树', '木又寸', 'M', 'blk 10;fort 3', '十年树木'],
+  ['枝', '木十又', 'M', 'hits 4 3', '节外生枝'],
+  ['枯', '木十口', 'M', 'vul 2;poison 3', '古木为枯'],
+  ['茶', '艹人木', 'M', 'heal 8;draw 1;cleanse', '人在草木间'],
+  ['犁', '禾刀牛', 'T', 'stripAll;all 12', '犁庭扫穴'],
+  ['体', '人木一', 'N', 'heal 6;str 1', '人之本'],
+  ['味', '口木一', 'N', 'recall 2', '回味'],
+  ['亲', '立木', 'N', 'act 1;heal 4', '亲朋相助'],
+  ['集', '隹木', 'N', 'draw 3', '群鸟栖木'],
+  ['霖', '雨木木', 'W', 'heal 8;wetAll;regen 3', '久旱甘霖'],
+  ['霜', '雨木目', 'W', 'frost 8', '雨相为霜'],
+  // ── 金
+  ['鑫', '金金金', 'J', 'gold 12;all 8', '三金为鑫'],
+  ['针', '金十', 'J', 'pierce 7;vul 2', '一针见血'],
+  ['钞', '金少', 'J', 'gold 4;hit 8', '金少为钞'],
+  ['钥', '金月', 'J', 'strip;vul 2', '开锁'],
+  ['钚', '金不', 'J', 'all 30;selfdmg 8;burnAll 5;selfburn 5', '……这也行？'],
+  ['锥', '金隹', 'J', 'pierce 12', '锥处囊中'],
+  ['销', '金小月', 'J', 'melt', '一笔勾销'],
+  // ── 土
+  ['圭', '土土', 'T', 'blk 12', '重土为圭'],
+  ['尘', '小土', 'T', 'weakAll 2', '小土为尘'],
+  ['吐', '口土', 'N', 'poison 3', '一吐为快'],
+  ['坏', '土不', 'N', 'vul 3', '不成则坏'],
+  ['寺', '土寸', 'T', 'blk 7;weakAll 1', '寸土清净'],
+  ['坝', '土贝', 'T', 'blk 9;keep', '筑土为坝'],
+  ['坛', '土云', 'T', 'selfdmg 4;str 2;draw 1', '设坛'],
+  ['坐', '人人土', 'T', 'blk 16;nink 1', '二人坐于土上'],
+  ['里', '田土', 'T', 'heal 5;blk 5', '田土为里'],
+  ['坦', '日一土', 'T', 'blk 15;thorn 3', '坦然受之'],
+  ['堆', '土隹', 'T', 'heap', '聚土成堆'],
+  ['封', '土土寸', 'T', 'stun;strip;vul 2', '封印'],
+  ['蛙', '虫土土', 'N', 'ally 蛙', '井底之蛙'],
+  ['圣', '又土', 'N', 'heal 6;cleanse;all 6', '超凡入圣'],
+  ['怪', '心又土', 'N', 'conf;hit 8', '见怪不怪'],
+  ['干', '一十', 'N', 'ink 1;hit 4', '实干'],
+  ['士', '一十', 'N', 'str 1;blk 3', '士气'],
+  // ── 日月
+  ['昌', '日日', 'F', 'all 8', '二日为昌'],
+  ['晶', '日日日', 'F', 'all 14;vulAll 2', '三日为晶'],
+  ['明', '日月', 'F', 'hit 6;vul 2', '日月同辉'],
+  ['星', '日牛一', 'N', 'rnd 5 5', '日生为星'],
+  ['旦', '日一', 'F', 'nink 1;blk 5', '日出地平'],
+  ['早', '日十', 'N', 'early', '一日之计'],
+  ['间', '门日', 'N', 'conf;weak 1', '离间'],
+  ['音', '立日', 'N', 'all 5;weakAll 1', '立日为音'],
+  ['意', '立日心', 'N', 'draw 2;twice', '意在笔先'],
+  ['暗', '日立日', 'N', 'dodge 2;weakAll 2', '日音为暗'],
+  ['时', '日寸', 'N', 'draw 2;ink 1', '一寸光阴'],
+  ['旺', '日王', 'F', 'burnAll 4;str 1', '日王为旺'],
+  ['香', '禾日', 'M', 'heal 4;weakAll 1', '禾日为香'],
+  ['昙', '日云', 'N', 'tstr 4', '昙花一现'],
+  ['唱', '口日日', 'N', 'all 9;heal 3', '口昌为唱'],
+  ['草', '艹日十', 'M', 'draw 3', '草书'],
+  ['萌', '艹日月', 'M', 'weakAll 3', '草木萌动'],
+  ['胡', '十口月', 'N', 'babble', '胡来'],
+  ['章', '立日十', 'N', 'essay', '下笔成章'],
+  ['厚', '厂日子', 'T', 'thick', '厚积'],
+  ['宴', '宀日女', 'N', 'heal 10;draw 2', '设宴'],
+  ['朋', '月月', 'N', 'again', '同道为朋'],
+  ['鹏', '月月鸟', 'N', 'all 18;dodge 1', '鹏程万里'],
+  ['肖', '小月', 'N', 'mimic', '惟妙惟肖'],
+  ['削', '小月刀', 'J', 'pare', '削铁如泥'],
+  ['悄', '心小月', 'N', 'dodge 1;draw 2', '悄然'],
+  ['胜', '月牛一', 'N', 'win 18', '月生为胜'],
+  ['肘', '月寸', 'N', 'hit 10', '肘击'],
+  ['望', '亡月王', 'N', 'draw 2;nink 1;ndraw 1', '登高而望'],
+  // ── 山石田雨
+  ['出', '山山', 'T', 'slam', '两山相叠'],
+  ['岩', '山石', 'T', 'blk 9;thorn 2', '山石为岩'],
+  ['仙', '人山', 'N', 'dodge 1;heal 4', '人在山中'],
+  ['岛', '山鸟', 'T', 'isle', '海中之山'],
+  ['磊', '石石石', 'T', 'hits 7 3', '三石为磊'],
+  ['砂', '石少', 'T', 'all 5;weakAll 1', '飞砂走石'],
+  ['码', '石马', 'N', 'blk 6;hit 6', '加码'],
+  ['碧', '王白石', 'N', 'heal 6;regen 3;blk 6', '碧玉'],
+  ['拓', '手石', 'N', 'handup 1', '拓片'],
+  ['催', '人山隹', 'N', 'ink 2;draw 1', '催促'],
+  ['摧', '手山隹', 'T', 'strip;hit 22', '摧枯拉朽'],
+  ['男', '田力', 'N', 'hit 9;blk 4', '力于田'],
+  ['思', '田心', 'N', 'draw 2;blk 3', '心田'],
+  ['雷', '雨田', 'N', 'thunder 12', '雨落田间'],
+  ['苗', '艹田', 'M', 'growth 2', '田上生草'],
+  ['猫', '犬艹田', 'N', 'ally 猫', '它只是路过'],
+  ['瞄', '目艹田', 'N', 'natk 200', '瞄准'],
+  ['描', '手艹田', 'N', 'trace', '描摹'],
+  ['蕾', '艹雨田', 'M', 'nink 2;ndraw 2', '含苞'],
+  ['理', '王田土', 'N', 'tidy', '条理'],
+  ['童', '立田土', 'N', 'heal 5;child', '童心'],
+  ['霍', '雨隹', 'N', 'rnd 4 4', '磨刀霍霍'],
+  // ── 人
+  ['从', '人人', 'N', 'hits 3 3', '二人相随'],
+  ['众', '人人人', 'N', 'hits 3 7', '三人成众'],
+  ['信', '人言', 'N', 'blk 6;draw 1', '人言为信'],
+  ['闪', '门人', 'N', 'dodge 1;draw 1', '人过门隙'],
+  ['们', '门人', 'N', 'us', '我们'],
+  ['位', '人立', 'N', 'blk 7;ndraw 1', '各就各位'],
+  ['合', '人一口', 'N', 'unite', '合而为一'],
+  ['全', '人王', 'N', 'heal 8;blk 8', '保全'],
+  ['付', '人寸', 'N', 'pay', '付之一炬'],
+  ['会', '人云', 'N', 'meet', '人云亦云'],
+  ['伏', '人犬', 'N', 'blk 4;nall 12', '设伏'],
+  ['佯', '人羊', 'N', 'vul 2;dodge 1', '佯攻'],
+  ['巫', '工人人', 'N', 'poison 4;weak 2', '巫咒'],
+  ['侧', '人贝刀', 'N', 'pierce 14;vul 1', '侧击'],
+  ['诗', '言土寸', 'N', 'weakAll 3;vulAll 2;draw 2', '诗成泣鬼神'],
+  ['持', '手土寸', 'N', 'retain;blk 6', '持之以恒'],
+  ['仅', '人又', 'N', 'only 18', '仅此一击'],
+  // ── 口
+  ['回', '口口', 'N', 'recall 3', '口中有口'],
+  ['品', '口口口', 'N', 'vulAll 2;weakAll 1;draw 1', '三口为品'],
+  ['古', '十口', 'N', 'olden', '十口相传'],
+  ['叶', '十口', 'M', 'rnd 3 4', '一叶知秋'],
+  ['加', '口力', 'N', 'str 1;draw 1', '加把劲'],
+  ['另', '口力', 'N', 'anew', '另辟蹊径'],
+  ['召', '口刀', 'N', 'ally 卒', '召之即来'],
+  ['招', '手口刀', 'N', 'hits 8 2;draw 1', '出招'],
+  ['诏', '言口刀', 'N', 'act 2;str 1', '诏令'],
+  ['问', '门口', 'N', 'ask', '兴师问罪'],
+  ['鸣', '口鸟', 'N', 'first 16 8', '一鸣惊人'],
+  ['恕', '女口心', 'N', 'heal 9;cleanse', '如心为恕'],
+  ['和', '禾口', 'M', 'weakAll 2;heal 3', '以和为贵'],
+  ['骂', '口口马', 'N', 'hit 6;vul 3;weak 2', '破口大骂'],
+  ['圆', '口口贝', 'N', 'heal 8;gold 8', '圆满'],
+  ['否', '口不', 'N', 'strip;weak 1', '一口否决'],
+  ['吵', '口少', 'N', 'all 3;vulAll 1', '吵'],
+  ['因', '口大', 'N', 'poison 2;draw 1', '种因'],
+  ['囚', '口人', 'N', 'vul 2;weak 2', '人在围中'],
+  ['恩', '口大心', 'N', 'heal 8;regen 3', '因心为恩'],
+  ['吞', '一大口', 'N', 'devour 14', '天口为吞'],
+  ['告', '牛口', 'N', 'vul 2;act 1', '广而告之'],
+  ['吠', '犬口', 'N', 'all 4;weakAll 1', '犬吠'],
+  ['咩', '口羊', 'N', 'weakAll 1;heal 2', '咩——'],
+  ['哭', '口口犬', 'N', 'cry', '仓颉作书，鬼夜哭'],
+  ['叹', '口又', 'N', 'ink 1;draw 1;selfweak 1', '一声长叹'],
+  ['售', '口隹', 'N', 'sell', '待价而沽'],
+  ['唯', '口隹', 'N', 'solo', '唯一'],
+  ['扣', '手口', 'N', 'sap 1;hit 6', '克扣'],
+  ['苦', '艹十口', 'N', 'heal 12;selfweak 1', '良药苦口'],
+  ['固', '口十口', 'T', 'blk 12;keep', '固若金汤'],
+  ['宫', '宀口口', 'T', 'blk 14;keep', '深宫'],
+  ['驾', '力口马', 'N', 'all 8;draw 1', '并驾齐驱'],
+  ['贺', '力口贝', 'N', 'gold 10;heal 4', '道贺'],
+  // ── 心
+  ['忍', '刀心', 'N', 'blk 9;thorn 3', '忍字头上一把刀'],
+  ['忘', '亡心', 'N', 'forget', '心亡为忘'],
+  ['忙', '亡心', 'N', 'ink 2;selfdmg 3', '心亡亦为忙'],
+  ['怕', '心白', 'N', 'hit 3;weak 3', '心里一白'],
+  ['闷', '门心', 'N', 'hit 12;weak 1', '闷棍'],
+  ['怀', '心不', 'N', 'heal 5;weak 2', '怀柔'],
+  ['怒', '女又心', 'F', 'str 3;selfvul 2', '奴心为怒'],
+  // ── 手目
+  ['看', '手目', 'N', 'see', '手搭凉棚'],
+  ['拍', '手白', 'N', 'hit 10', '拍案'],
+  ['拉', '手立', 'N', 'hit 4;vul 1;draw 1', '拉扯'],
+  ['抄', '手少', 'N', 'copy', '照抄'],
+  ['扛', '手工', 'N', 'blk 14;selfweak 1', '硬扛'],
+  ['扯', '手止', 'N', 'strip;hit 8', '撕扯'],
+  ['推', '手隹', 'N', 'draw 2;nmul 150', '推敲'],
+  ['技', '手十又', 'N', 'hits 6 3', '绝技'],
+  ['盲', '亡目', 'N', 'blind 2', '目亡为盲'],
+  ['省', '少目', 'N', 'free;draw 1', '省着点用'],
+  // ── 女子
+  ['好', '女子', 'N', 'heal 5;draw 1', '女子为好'],
+  ['妈', '女马', 'N', 'heal 8', '妈'],
+  ['妙', '女少', 'N', 'nmul 200', '妙笔生花'],
+  ['安', '宀女', 'N', 'heal 6;blk 6', '安'],
+  ['努', '女又力', 'N', 'str 2;draw 1', '努力'],
+  ['妄', '亡女', 'N', 'hit 20;selfvul 2', '胆大妄为'],
+  ['字', '宀子', 'N', 'twice', '屋下养子，是为字'],
+  ['季', '禾子', 'M', 'season', '四季轮转'],
+  ['孬', '不女子', 'N', 'dodge 2;selfweak 2', '不好'],
+  // ── 力刀门
+  ['劣', '少力', 'N', 'sap 2;weak 2', '少力为劣'],
+  ['功', '工力', 'N', 'str 1;blk 5', '苦功'],
+  ['动', '云力', 'N', 'act 1;ink 1', '动起来'],
+  ['夯', '大力', 'T', 'hit 12;vul 1', '大力为夯'],
+  ['历', '厂力', 'N', 'mastery 10', '历练'],
+  ['利', '禾刀', 'J', 'tstr 3', '以刀断禾'],
+  ['则', '贝刀', 'N', 'draw 1;blk 5', '法则'],
+  ['闯', '门马', 'N', 'pierce 11', '马入门中'],
+  ['闩', '门一', 'N', 'blk 8;ward 1', '门上一横'],
+  ['闰', '门王', 'N', 'extra', '王居门中，多出一段'],
+  // ── 禾马鸟虫
+  ['秒', '禾少', 'N', 'sec', '秒杀'],
+  ['驮', '大马', 'N', 'blk 8;draw 1', '负重'],
+  ['驭', '又马', 'N', 'act 1;draw 1', '驾驭'],
+  ['鸡', '又鸟', 'N', 'nink 1;ndraw 1', '闻鸡起舞'],
+  ['虹', '虫工', 'N', 'rainbow', '五色'],
+  ['独', '犬虫', 'N', 'lone', '独行'],
+  ['茧', '艹虫', 'M', 'blk 12;nstr 2', '作茧，然后破茧'],
+  ['蚕', '一大虫', 'N', 'poison 4', '天虫为蚕'],
+  // ── 贝王白
+  ['贡', '工贝', 'J', 'gold 6', '纳贡'],
+  ['狂', '犬王', 'N', 'frenzy', '狂草'],
+  ['皇', '白王', 'N', 'weakAll 2;vulAll 1;str 1', '白王为皇'],
+  ['环', '王不', 'N', 'cycle', '循环'],
+  ['百', '一白', 'N', 'rnd 1 10', '百发'],
+  ['原', '厂白小', 'N', 'origin', '还原'],
+  ['迫', '辶白', 'N', 'vul 2;hit 8', '逼迫'],
+  // ── 大小少一十
+  ['天', '一大', 'N', 'gold 5', '天雨粟'],
+  ['尖', '小大', 'J', 'pierce 8', '上小下大'],
+  ['夺', '大寸', 'N', 'seize', '夺'],
+  ['美', '羊大', 'N', 'heal 5;gold 3;draw 1', '羊大为美'],
+  ['达', '辶大', 'N', 'draw 3', '四通八达'],
+  ['雀', '小隹', 'N', 'hit 3;dodge 1;draw 1', '雀跃'],
+  ['步', '止少', 'N', 'blk 6;nblk 6', '步步为营'],
+  ['正', '一止', 'N', 'cleanse;all 5;blk 5', '一止为正'],
+  ['二', '一一', 'N', 'draw 2', '一生二'],
+  ['三', '一一一', 'N', 'draw 3;ink 1', '三生万物'],
+  ['生', '牛一', 'M', 'heal 6;regen 2', '牛立于一'],
+  ['歪', '不一止', 'N', 'conf;hit 8', '不正为歪'],
+  ['定', '宀一止', 'N', 'blk 12;barricade', '定'],
+  ['计', '言十', 'N', 'draw 1;free', '计上心来'],
+  ['辛', '立十', 'N', 'burn 4;vul 1', '辛辣'],
+  ['支', '十又', 'N', 'blk 6;act 1', '支援'],
+  ['盾', '厂十目', 'T', 'blk 16;thorn 2', '盾'],
+  ['隼', '隹十', 'N', 'dive', '俯冲'],
+  // ── 言寸
+  ['讨', '言寸', 'N', 'crusade', '讨伐'],
+  ['讧', '言工', 'N', 'confAll', '内讧'],
+  ['狱', '犬言犬', 'N', 'stun2', '两犬守一言'],
+  ['守', '宀寸', 'T', 'blk 11', '守'],
+  ['狩', '犬宀寸', 'N', 'hunt 16', '狩猎'],
+  ['对', '又寸', 'N', 'mirror', '针锋相对'],
+  ['过', '辶寸', 'N', 'dodge 1;hit 6', '过招'],
+  // ── 犬牛云及其他
+  ['厌', '厂犬', 'N', 'hit 4;weak 2;vul 1', '厌胜'],
+  ['获', '艹犬犬', 'N', 'gold 8;draw 2', '收获'],
+  ['牢', '宀牛', 'N', 'mend', '亡羊补牢'],
+  ['造', '辶牛口', 'N', 'create', '造化'],
+  ['运', '辶云', 'N', 'luck', '时来运转'],
+  ['芒', '艹亡', 'N', 'pierce 9;tstr 1', '锋芒'],
+  ['双', '又又', 'N', 'hits 6 2', '成双'],
+  ['反', '厂又', 'N', 'tthorn 8', '反击'],
+  ['还', '辶不', 'N', 'revenge', '以牙还牙'],
+  // ── 鬼
+  ['魂', '云鬼', 'N', 'soul', '还魂'],
+  ['魄', '白鬼', 'N', 'str 2;blk 6', '魄力'],
+  ['魅', '鬼木一', 'N', 'conf;conf;weak 2', '魅惑'],
+  ['槐', '木鬼', 'M', 'poison 4;blk 6', '鬼木'],
+  ['愧', '心鬼', 'N', 'sap 3;vul 2', '心中有鬼'],
+  ['瑰', '王鬼', 'N', 'thorn 5;heal 4', '带刺'],
+  ['傀', '人鬼', 'N', 'ally 傀', '傀儡'],
+  ['魇', '厂犬鬼', 'N', 'stunAll', '梦魇'],
+];
+
+const ALLY = {
+  卒: '回合结束时，攻击随机敌人 4',
+  猫: '回合结束时，挠随机敌人 2 下，每下 3（无视护盾）',
+  蛙: '回合结束时，令随机敌人 毒+1，并为你提供 2 护盾',
+  傀: '回合结束时，攻击随机敌人 7',
+  伙: '回合结束时，为你提供 4 护盾',
+};
+
+const GLOSS = {
+  墨: '每回合 3 点。无论字由几个字根组成，写一个字只耗 1 墨',
+  灼: '回合开始时受到等量伤害（无视护盾），随后层数减半',
+  毒: '回合开始时受到等量伤害（无视护盾），不会衰减',
+  湿: '被「雷」击中时伤害翻倍并被困住；被「霜」冻结；火属性攻击会把它蒸干',
+  泣: '造成的伤害 -30%',
+  破: '受到的伤害 +50%',
+  困: '跳过下一次行动（首领有定力，只会被削弱）',
+  乱: '下一次攻击改为打向随机一个敌人，包括它自己',
+  盲: '下一次攻击落空',
+  力: '每一段攻击伤害 +1',
+  闪: '完全躲开下一次攻击',
+  荆: '每次被攻击时，反伤攻击者',
+  愈: '回合开始回复等量生命，随后层数 -1',
+  护盾: '抵挡伤害，你的回合开始时清零',
+  夜深: '第 10 回合起，所有敌人每回合 力 +1。别拖',
+  弱: '你造成的伤害 -30%',
+  伤: '你受到的伤害 +50%',
+  御: '抵消下一个负面状态',
+  代: '把下一次攻击原样奉还',
+  封: '被封住的字根这一回合不能用',
+  讹: '错字。组不了字，白占手牌；花 1 墨单独写出来就能把它抹掉',
+  朱批: '用朱笔批过的字根。每有一张参与，所成之字数值 +25%',
+  畏: '受到该属性伤害 +50%',
+  抗: '受到该属性伤害 -50%',
+  随从: '回合结束时自动行动，最多 4 个',
+};
+
+// 敌人。mv: '招式名|步骤'，pat: 出招顺序
+const EN = {
+  // 卷一 · 荒野
+  蚊: { n: '血蚊', hp: 14, tag: '兽', fear: 'F', drop: '虫', mv: ['叮|atk 3 2', '吸血|leech 5'], pat: [0, 1] },
+  蛇: { n: '草蛇', hp: 20, tag: '兽', fear: 'J', drop: '虫', mv: ['毒牙|atk 5;burn 2', '缠|atk 7'], pat: [0, 1, 1] },
+  狼: { n: '饿狼', hp: 24, tag: '兽', fear: 'F', drop: '犬', mv: ['扑|atk 6', '撕|atk 3 2', '嚎|str 2'], pat: [0, 1, 2] },
+  狐: { n: '野狐', hp: 19, tag: '兽', drop: '犬', mv: ['媚|weak 2;blk 5', '抓|atk 6', '惑|atk 4;vul 1'], pat: [0, 1, 2] },
+  鸦: { n: '寒鸦', hp: 15, tag: '兽', drop: '鸟', mv: ['聒噪|atk 3;curse 1', '啄|atk 6'], pat: [0, 1, 1] },
+  魂: { n: '游魂', hp: 22, tag: '鬼', fear: 'F', drop: '云鬼', mv: ['幽怨|atk 5', '飘|blk 6;atk 3', '摄魂|drain 1;atk 2'], pat: [0, 1, 2] },
+  僵: { n: '僵尸', hp: 30, tag: '鬼', fear: 'F', drop: '人田', mv: ['扑|atk 8', '僵直|blk 8', '抓|atk 5;vul 1'], pat: [0, 1, 2] },
+  贼: { n: '毛贼', hp: 20, tag: '人', drop: '贝', mv: ['偷|steal 8;atk 3', '刺|atk 7', '躲|blk 7'], pat: [0, 1, 2] },
+  蛛: { n: '毒蛛', hp: 18, tag: '兽', fear: 'F', drop: '虫', mv: ['结网|seal 1;atk 2', '咬|atk 5', '连咬|atk 3 2'], pat: [0, 1, 2] },
+  魈: { n: '山魈', hp: 62, tag: '鬼', elite: 1, fear: 'F', drop: '鬼小月山', mv: ['连击|atk 5 2', '蓄力|str 2;blk 8', '重击|atk 13', '乱抓|atk 4 3'], pat: [0, 1, 2, 3] },
+  蟒: { n: '巨蟒', hp: 72, tag: '兽', elite: 1, fear: 'J', drop: '虫艹', mv: ['缠绕|seal 2;atk 5', '绞杀|atk 14', '蜕皮|blk 12;heal 6', '绞杀|atk 14'], pat: [0, 1, 2, 3] },
+  魃: { n: '旱魃', hp: 135, tag: '鬼', boss: 1, fear: 'W', resist: 'F', drop: '鬼日', mv: ['赤地|burn 4;drain 1;atk 5', '灼风|atk 6 2', '烈日|atk 17', '蓄热|str 2;blk 14'], pat: [0, 1, 2, 3] },
+  蛊: { n: '蛊母', hp: 115, tag: '兽', boss: 1, fear: 'F', drop: '虫', mv: ['产卵|summon 蛊虫 2', '毒雾|atk 7;burn 3', '噬咬|leech 11', '结茧|curse 2;blk 12'], pat: [0, 1, 2, 3, 1, 2] },
+  蛊虫: { ch: '虫', n: '蛊虫', hp: 9, tag: '兽', minion: 1, fear: 'F', mv: ['咬|atk 4'], pat: [0] },
+  // 卷二 · 人心
+  谣: { n: '谣言', hp: 30, tag: '人', drop: '言', mv: ['散布|curse 2', '中伤|atk 9', '三人成虎|atk 4 3'], pat: [0, 1, 2] },
+  谎: { n: '谎言', hp: 34, tag: '人', drop: '言艹亡', mv: ['欺瞒|atk 8;weak 1', '圆谎|blk 10;atk 5', '弥天|atk 13'], pat: [0, 1, 2] },
+  贪: { n: '贪念', hp: 40, tag: '心', drop: '贝', mv: ['攫取|steal 10;atk 6', '吞没|atk 11', '膨胀|str 2;blk 6'], pat: [0, 1, 2] },
+  妒: { n: '妒火', hp: 36, tag: '心', fear: 'W', resist: 'F', drop: '女火', mv: ['中烧|burn 4;atk 5', '灼眼|atk 10', '红眼|vul 2;atk 4'], pat: [0, 1, 2] },
+  怨: { n: '怨气', hp: 32, tag: '鬼', fear: 'F', drop: '心', mv: ['纠缠|atk 6 2', '幽咽|weak 2;atk 5', '积怨|str 3'], pat: [0, 1, 2], death: 'burn 3' },
+  惧: { n: '恐惧', hp: 38, tag: '心', drop: '心目', mv: ['战栗|weak 2;vul 2', '惊骇|atk 13', '窒息|seal 2;atk 4'], pat: [0, 1, 2] },
+  妖: { n: '花妖', hp: 44, tag: '鬼', fear: 'F', resist: 'M', drop: '女艹', mv: ['藤鞭|atk 9;weak 1', '落英|atk 6 2', '吐蕊|healAll 8;blk 6'], pat: [0, 1, 2] },
+  讹: { n: '讹兽', hp: 42, tag: '兽', drop: '言人', mv: ['讹传|curse 3', '咬|atk 10', '诓骗|atk 7;drain 1'], pat: [0, 1, 2] },
+  影: { n: '暗影', hp: 28, tag: '鬼', fear: 'F', drop: '日', mv: ['潜伏|blk 14', '突袭|atk 13', '蔽目|atk 7;weak 1'], pat: [0, 1, 2] },
+  蝗: { n: '飞蝗', hp: 17, tag: '兽', fear: 'F', drop: '虫', mv: ['啃|atk 4 2', '啃|atk 6'], pat: [0, 1] },
+  魅: { n: '魅', hp: 115, tag: '鬼', elite: 1, fear: 'F', drop: '鬼木一', mv: ['魅惑|seal 3;weak 1', '连鞭|atk 9 2', '蛊惑|weak 2;vul 2;blk 12', '夺魄|atk 21'], pat: [0, 1, 2, 3] },
+  蜮: { n: '鬼蜮', hp: 105, tag: '鬼', elite: 1, fear: 'F', drop: '虫鬼', mv: ['含沙|atk 6 3', '射影|vul 2;atk 8', '潜渊|blk 16;str 2'], pat: [0, 1, 2] },
+  魇: { n: '梦魇', hp: 235, tag: '鬼', boss: 1, fear: 'F', drop: '鬼厂犬', mv: ['入梦|seal 3;atk 6', '噩梦|atk 7 3', '梦呓|weak 2;vul 1;curse 2', '惊醒|atk 24', '沉眠|blk 20;str 2'], pat: [0, 1, 2, 3, 4] },
+  饕: { n: '饕餮', hp: 255, tag: '兽', boss: 1, drop: '口牛', mv: ['吞食|eat 2;heal 12', '撕咬|atk 15', '暴食|atk 7 3', '消化|str 3;blk 16'], pat: [0, 1, 2, 3, 1, 2] },
+  // 卷三 · 幽冥
+  魄: { n: '恶魄', hp: 54, tag: '鬼', fear: 'F', drop: '白鬼', mv: ['重击|atk 13', '凝魄|str 2;blk 10', '连击|atk 7 2'], pat: [0, 1, 2] },
+  魍: { n: '魍', hp: 46, tag: '鬼', fear: 'F', drop: '亡鬼', mv: ['阴风|atk 9;weak 1', '噬|atk 15'], pat: [0, 1] },
+  魉: { n: '魉', hp: 46, tag: '鬼', fear: 'F', drop: '鬼一', mv: ['鬼障|blkAll 10;healAll 6', '爪|atk 12;vul 1'], pat: [0, 1] },
+  恨: { n: '恨意', hp: 62, tag: '心', drop: '心', mv: ['切齿|atk 16', '饮恨|str 2;atk 7', '怒火|burn 4;atk 6'], pat: [0, 1, 2] },
+  痴: { n: '痴念', hp: 58, tag: '心', drop: '口', mv: ['痴缠|seal 2;atk 4', '执迷|atk 13', '妄语|curse 2;atk 7'], pat: [0, 1, 2] },
+  骨: { n: '白骨', hp: 46, tag: '鬼', fear: 'T', drop: '月', mv: ['乱舞|atk 5 3', '骨盾|blk 12;atk 5'], pat: [0, 1], revive: 22 },
+  魔: { n: '心魔', hp: 74, tag: '鬼', fear: 'F', drop: '鬼木', mv: ['魔击|atk 17', '入魔|str 2;blk 8', '魔焰|atk 8 2'], pat: [0, 1, 2] },
+  妄: { n: '妄念', hp: 50, tag: '心', drop: '亡女', mv: ['颠倒|weak 3', '狂乱|atk 9 2', '蚀心|drain 1;atk 9'], pat: [0, 1, 2] },
+  冤: { n: '冤魂', hp: 58, tag: '鬼', fear: 'F', drop: '云鬼', mv: ['索命|atk 11;burn 3', '哀嚎|vul 1;atk 8'], pat: [0, 1], death: 'curse 2' },
+  魑: { n: '魑', hp: 160, tag: '鬼', elite: 1, fear: 'F', drop: '鬼山', mv: ['蓄势|str 3;blk 18', '山崩|atk 26', '乱击|atk 10 2', '震慑|weak 2;vul 1;atk 6'], pat: [0, 1, 2, 3] },
+  咒: { n: '恶咒', hp: 140, tag: '鬼', elite: 1, drop: '口口', mv: ['诅咒|curse 3;atk 6', '连祷|atk 6 4', '缄口|seal 3;atk 10', '反噬|str 3;blk 15'], pat: [0, 1, 2, 3] },
+  忘: { n: '忘', hp: 350, tag: '无', boss: 1, drop: '', mv: ['遗忘|seal 3;atk 8', '空白|atk 9 3', '抹去|wipe;blk 20;str 2', '湮灭|atk 28', '虚无|weak 2;vul 1;drain 1;atk 6'], pat: [0, 1, 2, 3, 4, 1], pat2: [1, 3, 0, 2, 1, 4] },
+};
+
+const ENC = {
+  1: { easy: [['蚊', '蚊'], ['狼'], ['蛇'], ['鸦', '蚊'], ['魂'], ['贼'], ['蛛']],
+       hard: [['狼', '蚊'], ['蛇', '蛇'], ['僵', '鸦'], ['魂', '魂'], ['狐', '狼'], ['贼', '蛛'], ['僵', '蚊', '蚊'], ['狐', '魂'], ['蛛', '蛇']],
+       elite: [['魈'], ['蟒']], boss: ['魃', '蛊'] },
+  2: { easy: [['谣', '蝗'], ['谎'], ['贪'], ['影', '蝗'], ['怨', '蝗'], ['妒']],
+       hard: [['谣', '谎'], ['贪', '妒'], ['怨', '惧'], ['妖', '影'], ['讹', '谣'], ['蝗', '蝗', '蝗'], ['妖', '怨'], ['惧', '影'], ['讹', '贪'], ['妒', '怨', '蝗']],
+       elite: [['魅'], ['蜮']], boss: ['魇', '饕'] },
+  3: { easy: [['魄'], ['魍', '魉'], ['恨'], ['骨', '骨'], ['妄', '骨']],
+       hard: [['魔', '魄'], ['魍', '魉', '骨'], ['恨', '痴'], ['冤', '冤'], ['魔', '妄'], ['痴', '骨', '骨'], ['恨', '冤'], ['魄', '魄']],
+       elite: [['魑'], ['咒']], boss: ['忘'] },
+};
+
+const ACTS = { 1: ['卷一', '荒野'], 2: ['卷二', '人心'], 3: ['卷三', '幽冥'] };
+
+// 文房（遗物）。tier: c 普通 / b 首领
+const RELICS = {
+  langhao: ['狼毫', '每回合第一个字，每段伤害 +4', 'c'],
+  duanyan: ['端砚', '回合结束时，每剩 1 点墨获得 4 护盾', 'c'],
+  zhenzhi: ['镇纸', '回合开始时保留一半护盾', 'c'],
+  mochuang: ['墨床', '每场战斗开始时获得 8 护盾', 'c'],
+  shuicheng: ['水丞', '每场战斗第一回合多抽 2 张', 'c'],
+  bixi: ['笔洗', '回合结束时清除自身 1 个负面状态', 'c'],
+  bige: ['臂搁', '生命上限 +12', 'c'],
+  zitie: ['字帖', '每写出一个本场战斗没写过的字，获得 2 护盾', 'c'],
+  jingtang: ['惊堂木', '敌人被困住时，额外受到 10 伤害', 'c'],
+  tongqian: ['铜钱', '每场战斗胜利额外获得 8 粟', 'c'],
+  xionghuang: ['雄黄', '战斗开始时，鬼类敌人 泣 2、破 1', 'c'],
+  denglong: ['灯笼', '灼烧伤害 +50%', 'c'],
+  suoyi: ['蓑衣', '湿的敌人受到的伤害 +25%', 'c'],
+  suanpan: ['算盘', '战斗开始时，每持有 25 粟获得 1 力（至多 3）', 'c'],
+  hufu: ['虎符', '随从的效果 +50%', 'c'],
+  jiechi: ['戒尺', '每回合第一次受到攻击，伤害 -5', 'c'],
+  canjuan: ['残卷', '战后可选的字根多 1 个', 'c'],
+  moyu: ['墨玉', '生命归零时碎裂，回复 15 生命（一次）', 'c'],
+  zhujian: ['竹简', '每回合写下第 3 个字时，抽 2 张', 'c'],
+  xianglu: ['香炉', '每场战斗结束后回复 5 生命', 'c'],
+  taiji: ['太极佩', '打中敌人所畏的属性时，伤害由 +50% 变为 +100%', 'c'],
+  huimo: ['徽墨', '墨上限 +1', 'b'],
+  xuanzhi: ['宣纸', '每回合多抽 1 张', 'b'],
+  xianzhang: ['闲章', '每场战斗写下的第一个字，施放两次', 'b'],
+  shanzi: ['折扇', '每回合第一次写三部字时，墨 +1', 'b'],
+  zhusha: ['朱砂', '单写一个字根时，数值翻倍', 'b'],
+  bijia: ['笔架', '三部字数值 +30%', 'b'],
+};
+
+// 砚铭（开局三选一的本局规则）
+const BOONS = {
+  ximo: ['惜墨如金', '墨上限 -1；所有字数值 +60%'],
+  pomo: ['泼墨', '墨上限 +1；每回合少抽 1 张'],
+  kuangcao: ['狂草', '每回合多抽 2 张；生命上限 -14'],
+  gongbi: ['工笔', '三部字数值 +50%；单写字根数值 -50%'],
+  feibai: ['飞白', '每场战斗第一回合墨 +2；生命上限 -12'],
+  jinshi: ['金石', '获得的粟 +50%；生命上限 -8'],
+  guicai: ['鬼才', '开局带两张「鬼」；生命上限 -5'],
+  bowen: ['博闻', '每写出一个本局没写过的字，回复 2 生命'],
+  zhupi: ['朱批', '开局字根全部朱批；敌人生命 +20%'],
+  sujian: ['素笺', '没有规则。开局多 50 粟，外加一件文房'],
+  cangfeng: ['藏锋', '每回合第一个字不耗墨；生命上限 -10'],
+  yibi: ['一字千钧', '每回合只能写 2 个字，每个字施放两次；每回合少抽 1 张，生命上限 -10'],
+};
+
+// 笔（起手字根）。need: 解锁所需的识字数
+const KITS = [
+  { n: '燎原', d: '火与木。烧。', deck: '火火火木木山人口禾一', need: 0 },
+  { n: '听雨', d: '水与雷。先淋湿，再打雷。', deck: '水水水雨田木目白工立', need: 0 },
+  { n: '厚土', d: '土与山。把护盾砸出去。', deck: '土土山山石寸贝一人口', need: 0 },
+  { n: '众口', d: '人多嘴杂。三人成众，三口为品。', deck: '人人人口口犬门言大木', need: 25 },
+  { n: '日月', d: '光与时辰。抽牌、回墨、连写。', deck: '日日月月十一门寸立口', need: 50 },
+  { n: '金石', d: '金与刀。穿甲、敛财、还有点别的。', deck: '金金刀十少不小月口心', need: 80 },
+  { n: '牧野', d: '犬牛马。让随从替你写。', deck: '犬牛马口口刀人艹田门', need: 110 },
+  { n: '心斋', d: '心与亡。想得多，忘得也多。', deck: '心心田目木亡刀门白口', need: 140 },
+];
+
+const ASC = [
+  '', '敌人生命 +10%', '敌人伤害 +10%', '精英生命 +20%', '茶寮回复减少', '开局带一张「讹」',
+  '墨庄涨价 20%', '首领生命 +15%', '初始生命 -8', '敌人伤害再 +10%',
+];
+
+// 鬼夜哭 · 引擎（不碰 DOM，可在 node 里直接跑）
+
+function RNG(seed) {
+  let s = seed | 0;
+  const f = () => { s = (s + 0x6D2B79F5) | 0; let t = Math.imul(s ^ (s >>> 15), 1 | s); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  f.int = n => Math.floor(f() * n);
+  f.pick = a => a[f.int(a.length)];
+  f.chance = p => f() < p;
+  f.shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = f.int(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  f.get = () => s; f.set = v => { s = v | 0; };
+  return f;
+}
+
+// ───────── 索引
+const CH = {}, RECIPE = {};
+const keyOf = a => [...a].sort().join('');
+const parseFx = s => s.split(';').map(x => x.trim().split(/\s+/).map((v, i) => (i && /^-?\d+$/.test(v) ? +v : v)));
+for (const c in COMPS) { const [el, , fx] = COMPS[c]; CH[c] = { ch: c, comps: [c], key: c, el: el === 'N' ? '' : el, fx: parseFx(fx), n: 1, note: '' }; RECIPE[c] = [c]; }
+for (const [ch, cs, el, fx, note] of CHARS) { const comps = [...cs], key = keyOf(comps); CH[ch] = { ch, comps, key, el: el === 'N' ? '' : el, fx: parseFx(fx), n: comps.length, note }; (RECIPE[key] = RECIPE[key] || []).push(ch); }
+CH['讹'] = { ch: '讹', comps: ['讹'], key: '讹', el: '', fx: [['erase']], n: 1, note: '以讹传讹' }; RECIPE['讹'] = ['讹'];
+for (const id in EN) { const d = EN[id]; d.id = id; d.ch = d.ch || id; d.moves = d.mv.map(m => { const [name, st] = m.split('|'); return { name, steps: parseFx(st) }; }); }
+const TOTAL = CHARS.length;
+
+// ───────── 存档
+const STORE = (() => {
+  try { const t = '__gyk'; localStorage.setItem(t, '1'); localStorage.removeItem(t);
+    return { get: k => { try { return localStorage.getItem(k); } catch (e) { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} }, del: k => { try { localStorage.removeItem(k); } catch (e) {} } };
+  } catch (e) { const m = {}; return { get: k => (k in m ? m[k] : null), set: (k, v) => { m[k] = v; }, del: k => { delete m[k]; } }; }
+})();
+let META = { dict: {}, hint: {}, runs: 0, wins: 0, asc: 0, mute: false, tut: 0, hist: [], kitWins: {} };
+try { const s = STORE.get('gyk-meta'); if (s) META = Object.assign(META, JSON.parse(s)); } catch (e) {}
+const saveMeta = () => STORE.set('gyk-meta', JSON.stringify(META));
+const dictCount = () => CHARS.reduce((n, c) => n + (META.dict[c[0]] ? 1 : 0), 0);
+const known = ch => CH[ch].n === 1 || !!META.dict[ch] || !!META.hint[ch];
+
+// ───────── 字的效果：[描述, 执行, 是否攻击]
+const tgt = c => (c.t && c.t.alive ? c.t : (c.t = c.B.alive()[0] || null));
+const fm = m => (Math.round(m * 100) / 100).toString();
+const each = (B, f) => { for (const e of B.alive()) f(e); };
+const OPS = {
+  hit: [(a, V) => `造成 ${V(a[0])} 伤害`, (B, a, c) => B.hurt(tgt(c), c.V(a[0]), { el: c.def.el }), 1],
+  hits: [(a, V) => `攻击 ${a[1]} 次，每次 ${V(a[0])}`, (B, a, c) => { for (let i = 0; i < a[1] && !B.over; i++) B.hurt(tgt(c), c.V(a[0]), { el: c.def.el }); }, 1],
+  all: [(a, V) => `全体 ${V(a[0])} 伤害`, (B, a, c) => each(B, e => B.hurt(e, c.V(a[0]), { el: c.def.el })), 1],
+  rnd: [(a, V) => `随机攻击 ${a[1]} 次，每次 ${V(a[0])}`, (B, a, c) => { for (let i = 0; i < a[1] && !B.over; i++) B.hurt(B.rnd(), c.V(a[0]), { el: c.def.el }); }, 1],
+  pierce: [(a, V) => `造成 ${V(a[0])} 伤害（无视护盾）`, (B, a, c) => B.hurt(tgt(c), c.V(a[0]), { el: c.def.el, pierce: 1 }), 1],
+  blk: [(a, V) => `护盾 ${V(a[0])}`, (B, a, c) => B.block(c.V(a[0]))],
+  heal: [(a, V) => `回复 ${V(a[0])}`, (B, a, c) => B.heal(c.V(a[0]))],
+  regen: [a => `愈 ${a[0]}`, (B, a) => { B.pl.regen += a[0]; }],
+  thorn: [a => `荆 ${a[0]}`, (B, a) => { B.pl.thorn += a[0]; }],
+  tthorn: [a => `本回合 荆 ${a[0]}`, (B, a) => { B.pl.tthorn += a[0]; }],
+  str: [a => `力 +${a[0]}`, (B, a) => { B.pl.str += a[0]; }],
+  tstr: [a => `本回合 力 +${a[0]}`, (B, a) => { B.pl.tstr += a[0]; }],
+  nstr: [a => `下回合 力 +${a[0]}`, (B, a) => { B.nx.str += a[0]; }],
+  dodge: [a => `闪 ${a[0]}`, (B, a) => { B.pl.dodge += a[0]; }],
+  ward: [a => `御 ${a[0]}`, (B, a) => { B.pl.ward += a[0]; }],
+  reflect: [a => `代 ${a[0]}`, (B, a) => { B.pl.reflect += a[0]; }],
+  burn: [(a, V) => `灼 ${V(a[0])}`, (B, a, c) => B.fst(tgt(c), 'burn', c.V(a[0]))],
+  burnAll: [(a, V) => `全体 灼 ${V(a[0])}`, (B, a, c) => each(B, e => B.fst(e, 'burn', c.V(a[0])))],
+  poison: [a => `毒 ${a[0]}`, (B, a, c) => B.fst(tgt(c), 'poison', a[0])],
+  wet: [() => `湿`, (B, a, c) => B.fst(tgt(c), 'wet', 1)],
+  wetAll: [() => `全体 湿`, B => each(B, e => B.fst(e, 'wet', 1))],
+  weak: [a => `泣 ${a[0]}`, (B, a, c) => B.fst(tgt(c), 'weak', a[0])],
+  weakAll: [a => `全体 泣 ${a[0]}`, (B, a) => each(B, e => B.fst(e, 'weak', a[0]))],
+  vul: [a => `破 ${a[0]}`, (B, a, c) => B.fst(tgt(c), 'vul', a[0])],
+  vulAll: [a => `全体 破 ${a[0]}`, (B, a) => each(B, e => B.fst(e, 'vul', a[0]))],
+  stun: [() => `困`, (B, a, c) => B.fst(tgt(c), 'stun', 1)],
+  stun2: [() => `困 2 回合`, (B, a, c) => B.fst(tgt(c), 'stun', 2)],
+  stunAll: [() => `全体 困`, B => each(B, e => B.fst(e, 'stun', 1))],
+  conf: [() => `乱`, (B, a, c) => B.fst(tgt(c), 'conf', 1)],
+  confAll: [() => `全体 乱`, B => each(B, e => B.fst(e, 'conf', 1))],
+  blind: [a => `盲 ${a[0]}`, (B, a, c) => B.fst(tgt(c), 'blind', a[0])],
+  sap: [a => `目标 力 -${a[0]}`, (B, a, c) => { const e = tgt(c); if (e) { e.str = Math.max(-4, e.str - a[0]); B.E('txt', { e: e.uid, s: '力-' + a[0] }); } }],
+  strip: [() => `清除目标的护盾与力`, (B, a, c) => { const e = tgt(c); if (e) { e.blk = 0; if (e.str > 0) e.str = 0; } }],
+  stripAll: [() => `清除敌方全体的护盾与力`, B => each(B, e => { e.blk = 0; if (e.str > 0) e.str = 0; })],
+  draw: [a => `抽 ${a[0]}`, (B, a) => B.drawN(a[0])],
+  recall: [a => `从弃牌堆随机收回 ${a[0]} 张`, (B, a) => { const p = B.G.rng.shuffle(B.disc.filter(c => c.c !== '讹')).slice(0, a[0]); for (const c of p) if (B.hand.length < 10) { B.disc.splice(B.disc.indexOf(c), 1); B.hand.push(c); } }],
+  ink: [a => `墨 +${a[0]}`, (B, a) => { B.ink += a[0]; }],
+  nink: [a => `下回合 墨 +${a[0]}`, (B, a) => { B.nx.ink += a[0]; }],
+  ndraw: [a => `下回合多抽 ${a[0]}`, (B, a) => { B.nx.draw += a[0]; }],
+  nblk: [(a, V) => `下回合 护盾 ${V(a[0])}`, (B, a, c) => { B.nx.blk += c.V(a[0]); }],
+  nall: [(a, V) => `下回合开始时，全体 ${V(a[0])} 伤害`, (B, a, c) => { B.nx.all += c.V(a[0]); }],
+  natk: [a => `下一个攻击字伤害 ×${a[0] / 100}`, (B, a) => { B.mods.natk *= a[0] / 100; }],
+  nmul: [a => `下一个字数值 ×${a[0] / 100}`, (B, a) => { B.mods.nmul *= a[0] / 100; }],
+  free: [() => `下一个字不耗墨`, B => { B.mods.free++; }],
+  twice: [() => `下一个字施放两次`, B => { B.mods.twice++; }],
+  again: [() => `把上一个字再写一遍`, (B, a, c) => { if (B.last) B.run(B.last.def, B.last.m, c.t); else B.drawN(1); }],
+  gold: [a => `粟 +${a[0]}`, (B, a) => B.E('gold', { n: gainGold(B.G, a[0]) })],
+  selfdmg: [a => `自己失去 ${a[0]} 生命`, (B, a) => B.lose(Math.min(a[0], B.G.hp - 1))],
+  selfweak: [a => `自己 弱 ${a[0]}`, (B, a) => { B.pl.weak += a[0]; }],
+  selfvul: [a => `自己 伤 ${a[0]}`, (B, a) => { B.pl.vul += a[0]; }],
+  selfburn: [a => `自己 灼 ${a[0]}`, (B, a) => { B.pl.burn += a[0]; }],
+  cleanse: [() => `清除自身负面`, B => B.cleanse()],
+  ally: [a => `随从「${a[0]}」：${ALLY[a[0]]}`, (B, a) => { if (B.allies.length >= 4) B.allies.shift(); B.allies.push(a[0]); B.E('txt', { p: 1, s: '随从·' + a[0] }); }],
+  act: [a => `随从行动 ${a[0]} 次`, (B, a) => B.allyAct(a[0])],
+  keep: [() => `护盾保留到下回合`, B => { B.pl.keep = true; }],
+  barricade: [() => `本场战斗护盾不再清零`, B => { B.pl.barricade = true; }],
+  fort: [a => `本场每回合开始 护盾 +${a[0]}`, (B, a) => { B.pl.fort += a[0]; }],
+  growth: [a => `本场每回合开始 回复 ${a[0]}（可叠加）`, (B, a) => { B.pl.growth += a[0]; }],
+  handup: [a => `本场每回合多抽 ${a[0]}`, (B, a) => { B.pl.handup += a[0]; }],
+  mastery: [a => `本场所有字数值 +${a[0]}%（可叠加）`, (B, a) => { B.pl.mastery += a[0]; }],
+  retain: [() => `本回合手牌不弃`, B => { B.pl.retain = true; }],
+  exec: [(a, V) => `目标生命不足 ${a[0]}% 则直接抹杀（首领改为 ${V(30)} 伤害），否则造成 ${V(a[1])} 伤害`, (B, a, c) => { const e = tgt(c); if (!e) return; if (e.hp <= e.max * a[0] / 100) { if (e.d.boss) B.hurt(e, c.V(30), { el: c.def.el }); else { B.E('txt', { e: e.uid, s: '灭' }); B.kill(e); } } else B.hurt(e, c.V(a[1]), { el: c.def.el }); }, 1],
+  // ── 专属
+  fry: [() => `目标的灼翻倍`, (B, a, c) => { const e = tgt(c); if (e && e.st.burn) e.st.burn *= 2; }],
+  scorch: [(a, V) => `造成 ${V(6)} 伤害，目标每有 1 层灼再 +2`, (B, a, c) => { const e = tgt(c); if (e) B.hurt(e, c.V(6) + 2 * (e.st.burn || 0), { el: 'F' }); }, 1],
+  village: [(a, V) => `回复 ${V(4)}；生命不足一半时改为 ${V(10)}`, (B, a, c) => B.heal(c.V(B.G.hp < B.G.max / 2 ? 10 : 4))],
+  root: [(a, V) => `生命上限 +2（每场一次）；护盾 ${V(5)}`, (B, a, c) => { if (!B.once.root) { B.once.root = 1; B.G.max += 2; B.G.hp += 2; B.E('txt', { p: 1, s: '上限+2' }); } B.block(c.V(5)); }],
+  last: [(a, V) => `造成 ${V(a[0])} 伤害；若墨已用尽则翻倍`, (B, a, c) => B.hurt(tgt(c), c.V(a[0]) * (B.ink === 0 ? 2 : 1)), 1],
+  owl: [(a, V) => `造成 ${V(a[0])} 伤害；击杀则 墨 +1`, (B, a, c) => { const e = tgt(c); if (!e) return; B.hurt(e, c.V(a[0])); if (!e.alive) B.ink++; }, 1],
+  melt: [(a, V) => `花掉至多 10 粟，每 1 粟造成 ${V(3)} 伤害`, (B, a, c) => { const s = Math.min(10, B.G.gold); B.G.gold -= s; B.hurt(tgt(c), s * c.V(3), { el: 'J' }); }, 1],
+  heap: [(a, V) => `护盾 ${V(5)}，弃牌堆每有 1 张再 +1（至多 +15）`, (B, a, c) => B.block(c.V(5) + Math.min(15, B.disc.length))],
+  early: [() => `抽 2；若是本回合第一个字，墨 +1`, B => { B.drawN(2); if (B.castN === 0) B.ink++; }],
+  essay: [(a, V) => `造成 ${V(5)} 伤害，本场每写过一个不同的字再 +1.5`, (B, a, c) => B.hurt(tgt(c), c.V(5 + 1.5 * B.seen.size)), 1],
+  thick: [(a, V) => `护盾 ${V(6)}，然后护盾翻倍`, (B, a, c) => { B.block(c.V(6)); B.pl.blk *= 2; }],
+  mimic: [() => `复制手中随机一张字根（用后即散）`, B => B.dup(1)],
+  pare: [(a, V) => `造成 ${V(8)} 伤害，外加目标当前生命的 20%（首领 10%）`, (B, a, c) => { const e = tgt(c); if (e) B.hurt(e, c.V(8) + Math.floor(e.hp * (e.d.boss ? 0.1 : 0.2)), { el: 'J' }); }, 1],
+  win: [(a, V) => `造成 ${V(a[0])} 伤害；击杀则回复 6、粟 +5`, (B, a, c) => { const e = tgt(c); if (!e) return; B.hurt(e, c.V(a[0])); if (!e.alive) { B.heal(6); B.E('gold', { n: gainGold(B.G, 5) }); } }, 1],
+  slam: [(a, V, m) => `造成等同于自身护盾${m !== 1 ? ' ×' + fm(m) : ''}的伤害`, (B, a, c) => B.hurt(tgt(c), Math.round(B.pl.blk * c.m), { el: 'T' }), 1],
+  isle: [(a, V) => `护盾 ${V(8)}；只剩一个敌人时再 +${V(6)}`, (B, a, c) => B.block(c.V(8) + (B.alive().length === 1 ? c.V(6) : 0))],
+  thunder: [(a, V) => `造成 ${V(a[0])} 伤害；目标若湿，伤害翻倍并困住它`, (B, a, c) => { const e = tgt(c); if (!e) return; const w = e.st.wet; B.hurt(e, c.V(a[0]) * (w ? 2 : 1)); if (w && e.alive) { delete e.st.wet; B.fst(e, 'stun', 1); } }, 1],
+  trace: [() => `复制手中随机两张字根（用后即散）`, B => B.dup(2)],
+  tidy: [() => `把手牌补到 6 张；墨 +1`, B => { B.drawN(Math.max(0, 6 - B.hand.length)); B.ink++; }],
+  child: [() => `下一个单写的字根数值 ×3`, B => { B.mods.child = 1; }],
+  us: [(a, V) => `随从行动 1 次；没有随从则攻击 2 次，每次 ${V(3)}`, (B, a, c) => { if (B.allies.length) B.allyAct(1); else for (let i = 0; i < 2 && !B.over; i++) B.hurt(tgt(c), c.V(3)); }, 1],
+  unite: [(a, V) => `弃掉其余手牌，每弃 1 张对目标造成 ${V(7)} 伤害`, (B, a, c) => { const n = B.dumpHand(); for (let i = 0; i < n && !B.over; i++) B.hurt(tgt(c), c.V(7)); }, 1],
+  pay: [(a, V) => `花 5 粟，造成 ${V(16)} 伤害；没钱则只有 ${V(5)}`, (B, a, c) => { if (B.G.gold >= 5) { B.G.gold -= 5; B.hurt(tgt(c), c.V(16)); } else B.hurt(tgt(c), c.V(5)); }, 1],
+  meet: [() => `抽 2，每有一个随从多抽 1`, B => B.drawN(2 + B.allies.length)],
+  only: [(a, V) => `造成 ${V(a[0])} 伤害；弃掉所有手牌`, (B, a, c) => { B.hurt(tgt(c), c.V(a[0])); B.dumpHand(); }, 1],
+  olden: [(a, V) => `造成 ${V(4)} 伤害，战斗每过一回合再 +2`, (B, a, c) => B.hurt(tgt(c), c.V(4) + 2 * B.turn), 1],
+  anew: [() => `弃掉所有手牌，重抽等量再多 1 张`, B => { const n = B.dumpHand(); B.drawN(n + 1); }],
+  ask: [(a, V) => `造成 ${V(5)} 伤害，目标每有一种负面状态再 +${V(5)}`, (B, a, c) => { const e = tgt(c); if (!e) return; const k = ['burn', 'poison', 'wet', 'weak', 'vul', 'stun', 'conf', 'blind'].filter(s => e.st[s]).length; B.hurt(e, c.V(5) * (1 + k)); }, 1],
+  first: [(a, V) => `造成 ${V(a[1])} 伤害；若是本回合第一个字则为 ${V(a[0])}`, (B, a, c) => B.hurt(tgt(c), c.V(B.castN === 0 ? a[0] : a[1])), 1],
+  devour: [(a, V) => `造成 ${V(a[0])} 伤害，回复所造成伤害的一半`, (B, a, c) => { const d = B.hurt(tgt(c), c.V(a[0])); if (d > 0) B.heal(Math.ceil(d / 2)); }, 1],
+  cry: [() => `全体 泣 3、破 2，并各失去当前生命的 10%`, B => each(B, e => { B.fst(e, 'weak', 3); B.fst(e, 'vul', 2); B.dot(e, Math.floor(e.hp * 0.1), '哭'); })],
+  sell: [() => `选一张手牌永久卖掉，粟 +12`, B => B.ask('sell')],
+  solo: [(a, V) => `造成 ${V(8)} 伤害；只剩一个敌人时为 ${V(20)}`, (B, a, c) => B.hurt(tgt(c), c.V(B.alive().length === 1 ? 20 : 8)), 1],
+  forget: [(a, V) => `清除自身负面；目标 困`, (B, a, c) => { B.cleanse(); const e = tgt(c); if (!e) return; if (e.id === '忘') { B.E('txt', { e: e.uid, s: '以忘攻忘' }); B.hurt(e, c.V(30)); } else B.fst(e, 'stun', 1); }],
+  see: [() => `目标若要攻击，获得等同其伤害的护盾；否则抽 2`, (B, a, c) => { const e = tgt(c); if (!e) return; const it = B.intent(e); if (it.atk) B.block(it.atk * it.k); else B.drawN(2); }],
+  copy: [() => `选一张手牌，复制两张（用后即散）`, B => B.ask('copy')],
+  season: [(a, V) => `随回合轮转：春 回复 ${V(8)}／夏 全体 ${V(8)}／秋 粟 +6／冬 护盾 ${V(12)}`, (B, a, c) => { const s = (B.turn - 1) % 4; if (s === 0) B.heal(c.V(8)); else if (s === 1) each(B, e => B.hurt(e, c.V(8), { el: 'F' })); else if (s === 2) B.E('gold', { n: gainGold(B.G, 6) }); else B.block(c.V(12)); }],
+  extra: [() => `本回合结束后，再来一个回合（每场一次）`, B => { if (!B.once.extra) { B.once.extra = 1; B.extra = true; } else B.drawN(1); }],
+  sec: [(a, V) => `目标生命不高于 ${V(15)} 则直接秒杀（首领除外），否则造成 ${V(7)} 伤害`, (B, a, c) => { const e = tgt(c); if (!e) return; if (!e.d.boss && e.hp <= c.V(15)) { B.E('txt', { e: e.uid, s: '秒' }); B.kill(e); } else B.hurt(e, c.V(7)); }, 1],
+  rainbow: [(a, V) => `连击 5 次，每次 ${V(3)}，金木水火土各一`, (B, a, c) => { for (const el of 'JMWFT') if (!B.over) B.hurt(tgt(c), c.V(3), { el }); }, 1],
+  lone: [(a, V) => `造成 ${V(9)} 伤害；没有随从时翻倍`, (B, a, c) => B.hurt(tgt(c), c.V(9) * (B.allies.length ? 1 : 2)), 1],
+  frenzy: [() => `本回合写字不耗墨，但每写一个字失去 3 生命`, B => { B.mods.frenzy = true; }],
+  cycle: [() => `把弃牌堆洗回牌堆；抽 2`, B => { B.draw = B.G.rng.shuffle(B.draw.concat(B.disc)); B.disc = []; B.drawN(2); }],
+  origin: [() => `回复已损失生命的 30%；清除自身负面`, B => { B.heal(Math.ceil((B.G.max - B.G.hp) * 0.3)); B.cleanse(); }],
+  seize: [(a, V) => `夺走目标的护盾，再造成 ${V(6)} 伤害`, (B, a, c) => { const e = tgt(c); if (!e) return; if (e.blk) { B.block(e.blk); e.blk = 0; } B.hurt(e, c.V(6)); }, 1],
+  luck: [() => `粟 +1~10；抽 1`, B => { B.E('gold', { n: gainGold(B.G, 1 + B.G.rng.int(10)) }); B.drawN(1); }],
+  create: [() => `凭空写出一个你识得的三部字；抽 1`, (B, a, c) => { B.conjure(3, 1); B.drawN(1); }],
+  babble: [() => `胡乱写出三个你识得的二部字`, B => B.conjure(2, 3)],
+  revenge: [(a, V) => `造成上回合所受伤害两倍的伤害（至少 ${V(6)}）`, (B, a, c) => B.hurt(tgt(c), Math.max(c.V(6), Math.round(2 * B.tookLast * c.m))), 1],
+  soul: [() => `本场战斗中，下一次生命归零时改为保留 10 点`, B => { B.pl.soul = true; }],
+  mirror: [(a, V) => `造成等同目标本回合攻击力的伤害（至少 ${V(6)}）`, (B, a, c) => { const e = tgt(c); if (!e) return; const it = B.intent(e); B.hurt(e, Math.max(c.V(6), Math.round(it.atk * it.k * c.m))); }, 1],
+  dive: [(a, V) => `造成 ${V(13)} 伤害；目标没有护盾时再 +${V(5)}`, (B, a, c) => { const e = tgt(c); if (e) B.hurt(e, c.V(13) + (e.blk ? 0 : c.V(5))); }, 1],
+  crusade: [(a, V) => `造成 ${V(10)} 伤害；对精英和首领再 +${V(6)}`, (B, a, c) => { const e = tgt(c); if (e) B.hurt(e, c.V(10) + (e.d.boss || e.d.elite ? c.V(6) : 0)); }, 1],
+  hunt: [(a, V) => `造成 ${V(a[0])} 伤害；击杀则粟 +8、抽 2`, (B, a, c) => { const e = tgt(c); if (!e) return; B.hurt(e, c.V(a[0])); if (!e.alive) { B.E('gold', { n: gainGold(B.G, 8) }); B.drawN(2); } }, 1],
+  mend: [(a, V) => `回复上回合所受伤害的一半；护盾 ${V(6)}`, (B, a, c) => { B.heal(Math.ceil(B.tookLast / 2)); B.block(c.V(6)); }],
+  frost: [(a, V) => `全体 ${V(a[0])} 伤害；湿的敌人被冻住（困）`, (B, a, c) => each(B, e => { const w = e.st.wet; B.hurt(e, c.V(a[0]), { el: 'W' }); if (w && e.alive) { delete e.st.wet; B.fst(e, 'stun', 1); } }), 1],
+  erase: [() => `抹掉这个错字`, () => {}],
+};
+const NO_RANDOM = new Set(['create', 'babble', 'again', 'sell', 'copy', 'extra', 'frenzy', 'unite', 'only', 'anew']);
+const descChar = (ch, m) => { m = m || 1; const V = n => Math.max(1, Math.round(n * m)); return CH[ch].fx.map(a => OPS[a[0]][0](a.slice(1), V, m)).join('；'); };
+const isAtk = def => def.fx.some(a => OPS[a[0]][2]);
+const FOE_TAG = { burn: '灼', weak: '弱', vul: '伤', str: '强', blk: '守', blkAll: '守', heal: '愈', healAll: '愈', curse: '讹', drain: '墨', seal: '封', steal: '偷', summon: '召', eat: '吞', wipe: '抹' };
+const FOE_DESC = { atk: a => `攻击 ${a[0]}${a[1] > 1 ? '×' + a[1] : ''}`, leech: a => `攻击 ${a[0]} 并吸血`, burn: a => `令你 灼 ${a[0]}`, weak: a => `令你 弱 ${a[0]}`, vul: a => `令你 伤 ${a[0]}`, str: a => `力 +${a[0]}`, blk: a => `护盾 ${a[0]}`, blkAll: a => `全体护盾 ${a[0]}`, heal: a => `回复 ${a[0]}`, healAll: a => `全体回复 ${a[0]}`, curse: a => `往你的弃牌堆塞 ${a[0]} 张「讹」`, drain: a => `你下回合 墨 -${a[0]}`, seal: a => `下回合封住你 ${a[0]} 张手牌`, steal: a => `偷走至多 ${a[0]} 粟（击杀可夺回）`, summon: a => `召来 ${a[1]} 只${EN[a[0]].n}`, eat: a => `吞掉你牌堆里 ${a[0]} 张字根（本场）`, wipe: () => `抹去你的全部增益与随从` };
+
+const inkMaxOf = G => 3 + (G.relics.includes('huimo') ? 1 : 0) + (G.boon === 'pomo' ? 1 : 0) - (G.boon === 'ximo' ? 1 : 0);
+const handOf = G => 6 + (G.relics.includes('xuanzhi') ? 1 : 0) - (G.boon === 'pomo' || G.boon === 'yibi' ? 1 : 0) + (G.boon === 'kuangcao' ? 2 : 0);
+function gainGold(G, n) { n = Math.round(n * (G.boon === 'jinshi' ? 1.5 : 1)); G.gold += n; return n; }
+
+// 写出一个字：天雨粟、字典
+function noteChar(G, ch, B) {
+  if (CH[ch].n === 1) return;
+  G.st.chars++;
+  if (!G.seenRun[ch]) {
+    G.seenRun[ch] = 1; const isNew = !META.dict[ch]; const g = gainGold(G, isNew ? 8 : 2);
+    if (isNew) { G.st.newc++; (G.newList = G.newList || []).push(ch); }
+    if (G.boon === 'bowen' && B) B.heal(2);
+    if (B) B.E('rain', { ch, isNew, g });
+    META.dict[ch] = (META.dict[ch] || 0) + 1; delete META.hint[ch];
+    if (isNew) saveMeta();
+  } else META.dict[ch] = (META.dict[ch] || 0) + 1;
+}
+
+// ───────── 战斗
+let UID = 0;
+function newBattle(G, ids, kind) {
+  const R = G.rng, has = id => G.relics.includes(id);
+  const B = { G, kind, turn: 0, ink: 0, hand: [], draw: [], disc: [], gone: [], en: [], allies: [], ev: [], over: null, pending: null, extra: false,
+    pl: { blk: 0, str: 0, tstr: 0, dodge: 0, thorn: 0, tthorn: 0, regen: 0, ward: 0, reflect: 0, weak: 0, vul: 0, burn: 0, fort: 0, growth: 0, handup: 0, mastery: 0, barricade: false, keep: false, retain: false, soul: false },
+    nx: { ink: 0, draw: 0, blk: 0, all: 0, str: 0, seal: 0 },
+    mods: { free: 0, twice: 0, nmul: 1, natk: 1, child: 0, frenzy: false }, curAtk: 1,
+    castN: 0, total: 0, seen: new Set(), last: null, tookLast: 0, tookNow: 0, wasHit: false, used: {}, once: {}, kills: 0 };
+  const P = B.pl;
+  const E = B.E = (k, o) => { B.ev.push(Object.assign({ k }, o)); };
+  B.hpMul = (G.asc >= 1 ? 1.1 : 1) * (G.boon === 'zhupi' ? 1.2 : 1);
+  B.dmgMul = 1 + (G.asc >= 2 ? 0.1 : 0) + (G.asc >= 9 ? 0.1 : 0);
+  B.alive = () => B.en.filter(e => e.alive);
+  B.rnd = () => { const a = B.alive(); return a.length ? R.pick(a) : null; };
+
+  const mkFoe = id => {
+    const d = EN[id]; let hp = d.hp * B.hpMul;
+    if (d.elite && G.asc >= 3) hp *= 1.2; if (d.boss && G.asc >= 7) hp *= 1.15;
+    if (!d.boss) hp *= 0.94 + R() * 0.12;
+    hp = Math.round(hp);
+    return { id, ch: d.ch, n: d.n, hp, max: hp, blk: 0, str: 0, st: {}, d, pi: 0, mv: null, alive: true, uid: ++UID };
+  };
+  const nextMove = (e, first) => {
+    const d = e.d; let pat = d.pat;
+    if (d.pat2 && e.hp <= e.max / 2) { if (!e.p2) { e.p2 = 1; e.pi = -1; e.str += 2; E('txt', { e: e.uid, s: '……' }); } pat = d.pat2; }
+    if (first) e.pi = d.boss || d.elite ? 0 : R.int(pat.length); else e.pi++;
+    e.mv = d.moves[pat[e.pi % pat.length]];
+  };
+  B.intent = e => {
+    const o = { name: e.mv.name, atk: 0, k: 0, tags: [], desc: e.mv.steps.map(a => FOE_DESC[a[0]](a.slice(1))).join('；') };
+    if (e.st.stun) { o.stun = 1; return o; }
+    for (const [op, n, k] of e.mv.steps) {
+      if (op === 'atk' || op === 'leech') { o.atk = Math.floor(Math.max(0, Math.floor((n * B.dmgMul + e.str) * (e.st.weak ? 0.7 : 1))) * (P.vul ? 1.5 : 1)); o.k = k || 1; if (op === 'leech') o.tags.push('吸'); }
+      else if (!o.tags.includes(FOE_TAG[op])) o.tags.push(FOE_TAG[op]);
+    }
+    return o;
+  };
+
+  const deathCheck = () => {
+    if (G.hp > 0) return;
+    if (P.soul) { P.soul = false; G.hp = 10; E('txt', { p: 1, s: '还魂' }); }
+    else if (has('moyu')) { G.relics.splice(G.relics.indexOf('moyu'), 1); G.hp = 15; E('txt', { p: 1, s: '墨玉碎了' }); }
+    else { G.hp = 0; B.over = 'lose'; }
+  };
+  B.kill = e => {
+    if (!e.alive) return;
+    if (e.d.revive && !e.revived) { e.revived = 1; e.hp = Math.round(e.d.revive * B.hpMul); e.st = {}; e.blk = 0; E('txt', { e: e.uid, s: '重聚' }); return; }
+    e.alive = false; e.hp = 0; B.kills++; G.st.kills++; E('die', { e: e.uid });
+    if (e.stolen) { G.gold += e.stolen; E('gold', { n: e.stolen }); }
+    if (e.d.death && !B.over) foeSteps(e, parseFx(e.d.death));
+    if (!B.alive().length && B.over !== 'lose') B.over = 'win';
+  };
+  B.hurt = (e, n, o) => {
+    o = o || {};
+    if (!e || !e.alive || B.over === 'lose') return 0;
+    let d = n;
+    if (!o.raw) { d += P.str + P.tstr + (B.castN === 0 && has('langhao') ? 4 : 0); if (P.weak) d *= 0.7; d *= B.curAtk; }
+    if (e.st.vul) d *= 1.5;
+    let fear = 0, res = 0;
+    if (o.el) { if (e.d.fear === o.el) { d *= has('taiji') ? 2 : 1.5; fear = 1; } else if (e.d.resist === o.el) { d *= 0.5; res = 1; } }
+    if (e.st.wet) { if (has('suoyi')) d *= 1.25; if (o.el === 'F') { delete e.st.wet; E('txt', { e: e.uid, s: '蒸干' }); } }
+    d = Math.max(0, Math.floor(d));
+    let hp = d, ab = 0;
+    if (!o.pierce && e.blk) { ab = Math.min(e.blk, d); e.blk -= ab; hp -= ab; }
+    e.hp -= hp;
+    E('hit', { e: e.uid, n: hp, ab, fear, res });
+    if (e.hp <= 0) B.kill(e);
+    return hp;
+  };
+  B.dot = (e, d, s) => { if (!e.alive || d <= 0) return; e.hp -= d; E('dot', { e: e.uid, n: d, s }); if (e.hp <= 0) B.kill(e); };
+  B.block = n => { if (n > 0) { P.blk += n; E('blk', { n }); } };
+  B.heal = n => { const b = G.hp; G.hp = Math.min(G.max, G.hp + n); if (G.hp > b) E('heal', { n: G.hp - b }); };
+  B.lose = n => { if (n <= 0) return; G.hp -= n; B.tookNow += n; E('phit', { n, ab: 0, self: 1 }); deathCheck(); };
+  B.cleanse = () => { P.weak = P.vul = P.burn = 0; B.hand.forEach(c => { c.sealed = false; }); if (B.nx.ink < 0) B.nx.ink = 0; B.nx.seal = 0; };
+  const debuff = (k, n) => { if (P.ward > 0) { P.ward--; E('txt', { p: 1, s: '御' }); return; } P[k] += n; E('txt', { p: 1, s: { burn: '灼', weak: '弱', vul: '伤' }[k] + '+' + n, bad: 1 }); };
+  B.fst = (e, k, n) => {
+    if (!e || !e.alive) return;
+    if ((k === 'stun' || k === 'conf' || k === 'blind') && e.d.boss) { e.st.weak = (e.st.weak || 0) + 2; E('txt', { e: e.uid, s: '定力' }); return; }
+    if (k === 'stun') {
+      if (e.st.imm) { e.st.weak = (e.st.weak || 0) + 1; E('txt', { e: e.uid, s: '挣脱' }); return; }
+      e.st.stun = Math.max(e.st.stun || 0, n); E('txt', { e: e.uid, s: '困' });
+      if (has('jingtang')) B.hurt(e, 10, { raw: 1 });
+      return;
+    }
+    if (k === 'wet') { e.st.wet = 1; return; }
+    e.st[k] = (e.st[k] || 0) + n;
+  };
+  const toDisc = c => { c.sealed = false; if (!c.tmp) B.disc.push(c); };
+  B.drawN = n => {
+    for (let i = 0; i < n; i++) {
+      if (B.hand.length >= 10) break;
+      if (!B.draw.length) { if (!B.disc.length) break; B.draw = R.shuffle(B.disc); B.disc = []; }
+      B.hand.push(B.draw.pop());
+    }
+  };
+  B.dumpHand = () => { const n = B.hand.length; B.hand.forEach(toDisc); B.hand = []; return n; };
+  B.dup = n => { const pool = R.shuffle(B.hand.filter(c => c.c !== '讹')).slice(0, n); for (const c of pool) if (B.hand.length < 10) B.hand.push({ c: c.c, up: c.up, tmp: true }); };
+  B.allyAct = times => {
+    const k = has('hufu') ? 1.5 : 1, v = n => Math.round(n * k);
+    for (let t = 0; t < times; t++) for (const a of B.allies.slice()) {
+      if (B.over) return;
+      E('ally', { a });
+      if (a === '卒') B.hurt(B.rnd(), v(4), { raw: 1 });
+      else if (a === '猫') { B.hurt(B.rnd(), v(3), { raw: 1, pierce: 1 }); B.hurt(B.rnd(), v(3), { raw: 1, pierce: 1 }); }
+      else if (a === '蛙') { B.fst(B.rnd(), 'poison', 1); B.block(v(2)); }
+      else if (a === '傀') B.hurt(B.rnd(), v(7), { raw: 1 });
+      else if (a === '伙') B.block(v(4));
+    }
+  };
+  B.conjure = (n, times) => {
+    let pool = CHARS.filter(c => CH[c[0]].n === n && META.dict[c[0]] && !CH[c[0]].fx.some(a => NO_RANDOM.has(a[0]))).map(c => c[0]);
+    if (!pool.length) pool = n === 3 ? ['焚', '淋', '众'] : ['炎', '林', '明', '从'];
+    for (let i = 0; i < times && !B.over; i++) { const ch = R.pick(pool); E('cast', { ch, n, times: 1, sub: 1 }); B.run(CH[ch], 1, B.rnd()); }
+  };
+  B.ask = kind => { if (B.hand.some(c => c.c !== '讹')) B.pending = { kind }; };
+  B.choose = i => {
+    const p = B.pending, c = B.hand[i];
+    if (!p || !c || c.c === '讹') return false;
+    B.pending = null;
+    if (p.kind === 'sell') {
+      B.hand.splice(i, 1);
+      const j = G.deck.findIndex(d => d.c === c.c && !!d.up === !!c.up);
+      if (!c.tmp && j >= 0 && G.deck.length > 5) G.deck.splice(j, 1);
+      E('gold', { n: gainGold(G, 12) });
+    } else if (p.kind === 'copy') { for (let k = 0; k < 2 && B.hand.length < 10; k++) B.hand.push({ c: c.c, up: c.up, tmp: true }); }
+    return true;
+  };
+
+  B.run = (def, m, t) => { const c = { t, m, def, B, V: n => Math.max(1, Math.round(n * m)) }; for (const a of def.fx) { if (B.over) break; OPS[a[0]][1](B, a.slice(1), c); } };
+  B.mulOf = (def, cards) => {
+    let m = 1 + 0.25 * cards.filter(c => c.up).length;
+    if (G.boon === 'ximo') m *= 1.6;
+    if (def.n === 3) { if (G.boon === 'gongbi') m *= 1.5; if (has('bijia')) m *= 1.3; }
+    if (def.n === 1) { if (G.boon === 'gongbi') m *= 0.5; if (has('zhusha')) m *= 2; if (B.mods.child) m *= 3; }
+    return m * (1 + P.mastery / 100) * B.mods.nmul;
+  };
+  B.costOf = () => (B.mods.frenzy || B.mods.free || (G.boon === 'cangfeng' && B.castN === 0) ? 0 : 1);
+  B.canCast = () => !B.over && !B.pending && (G.boon !== 'yibi' || B.castN < 2);
+  B.options = () => {
+    const h = B.hand, out = {}, n = h.length, ok = i => !h[i].sealed;
+    const add = idxs => { const r = RECIPE[keyOf(idxs.map(i => h[i].c))]; if (!r) return; const up = idxs.filter(i => h[i].up).length; for (const ch of r) if (!out[ch] || out[ch].up < up) out[ch] = { ch, idxs, up }; };
+    for (let i = 0; i < n; i++) if (ok(i)) { add([i]); for (let j = i + 1; j < n; j++) if (ok(j)) { add([i, j]); for (let k = j + 1; k < n; k++) if (ok(k)) add([i, j, k]); } }
+    return Object.values(out);
+  };
+  B.cast = (idxs, ch, ti) => {
+    if (!B.canCast()) return false;
+    const def = CH[ch], cards = idxs.map(i => B.hand[i]);
+    if (!def || cards.some(c => !c || c.sealed) || keyOf(cards.map(c => c.c)) !== def.key) return false;
+    const fz = B.mods.frenzy;
+    if (!(fz || (G.boon === 'cangfeng' && B.castN === 0))) { if (B.mods.free) B.mods.free--; else if (B.ink < 1) return false; else B.ink--; }
+    const m = B.mulOf(def, cards); B.mods.nmul = 1; if (def.n === 1) B.mods.child = 0;
+    B.hand = B.hand.filter(c => !cards.includes(c));
+    for (const c of cards) { if (c.c === '讹') B.gone.push(c); else toDisc(c); }
+    if (isAtk(def)) { B.curAtk = B.mods.natk; B.mods.natk = 1; }
+    let times = 1;
+    if (B.mods.twice) { B.mods.twice--; times++; }
+    if (G.boon === 'yibi') times++;
+    if (has('xianzhang') && B.total === 0) times++;
+    const fresh = !B.seen.has(ch);
+    E('cast', { ch, n: def.n, times, el: def.el });
+    const t = B.en[ti] && B.en[ti].alive ? B.en[ti] : B.alive()[0];
+    for (let i = 0; i < times && !B.over; i++) B.run(def, m, t);
+    B.curAtk = 1;
+    if (!def.fx.some(a => a[0] === 'again')) B.last = { def, m };
+    if (fresh) { B.seen.add(ch); if (has('zitie')) B.block(2); }
+    noteChar(G, ch, B);
+    B.castN++; B.total++;
+    if (B.castN === 3 && has('zhujian')) B.drawN(2);
+    if (def.n === 3 && !B.used.shanzi && has('shanzi')) { B.used.shanzi = 1; B.ink++; }
+    if (fz && !B.over) B.lose(Math.min(3, G.hp - 1));
+    return true;
+  };
+
+  const foeAtk = (e, n, k) => {
+    const per = () => Math.max(0, Math.floor((n * B.dmgMul + e.str) * (e.st.weak ? 0.7 : 1)));
+    if (e.st.blind) { e.st.blind--; if (!e.st.blind) delete e.st.blind; E('txt', { e: e.uid, s: '落空' }); return 0; }
+    if (e.st.conf) { e.st.conf--; if (!e.st.conf) delete e.st.conf; const x = B.rnd(); E('txt', { e: e.uid, s: '乱' }); for (let i = 0; i < k && x.alive; i++) B.hurt(x, per(), { raw: 1 }); return 0; }
+    if (P.dodge) { P.dodge--; E('txt', { p: 1, s: '闪' }); return 0; }
+    if (P.reflect) { P.reflect--; E('txt', { p: 1, s: '代' }); for (let i = 0; i < k && e.alive; i++) B.hurt(e, per(), { raw: 1 }); return 0; }
+    let tot = 0;
+    for (let i = 0; i < k && !B.over && e.alive; i++) {
+      let d = per(); if (P.vul) d = Math.floor(d * 1.5);
+      if (!B.wasHit) { B.wasHit = true; if (has('jiechi')) d = Math.max(0, d - 5); }
+      const ab = Math.min(P.blk, d); P.blk -= ab; const hp = d - ab;
+      if (hp > 0) { G.hp -= hp; B.tookNow += hp; tot += hp; }
+      E('phit', { n: hp, ab, e: e.uid });
+      deathCheck();
+      const th = P.thorn + P.tthorn; if (th && e.alive && !B.over) B.hurt(e, th, { raw: 1 });
+    }
+    return tot;
+  };
+  const healFoe = (e, n) => { const b = e.hp; e.hp = Math.min(e.max, e.hp + n); if (e.hp > b) E('txt', { e: e.uid, s: '+' + (e.hp - b), good: 1 }); };
+  const foeSteps = (e, steps) => {
+    for (const a of steps) {
+      if (B.over) return;
+      const [op, n, k] = a;
+      switch (op) {
+        case 'atk': foeAtk(e, n, k || 1); break;
+        case 'leech': { const d = foeAtk(e, n, 1); if (d > 0 && e.alive) healFoe(e, d); break; }
+        case 'burn': case 'weak': case 'vul': debuff(op, n); break;
+        case 'str': e.str += n; E('txt', { e: e.uid, s: '力+' + n }); break;
+        case 'blk': e.blk += n; break;
+        case 'blkAll': each(B, x => { x.blk += n; }); break;
+        case 'heal': healFoe(e, n); break;
+        case 'healAll': each(B, x => healFoe(x, n)); break;
+        case 'curse': for (let i = 0; i < n; i++) B.disc.push({ c: '讹' }); E('txt', { p: 1, s: '讹+' + n, bad: 1 }); break;
+        case 'drain': if (P.ward > 0) { P.ward--; E('txt', { p: 1, s: '御' }); } else { B.nx.ink -= n; E('txt', { p: 1, s: '墨-' + n, bad: 1 }); } break;
+        case 'seal': if (P.ward > 0) { P.ward--; E('txt', { p: 1, s: '御' }); } else { B.nx.seal += n; E('txt', { p: 1, s: '封+' + n, bad: 1 }); } break;
+        case 'steal': { const s = Math.min(G.gold, n); G.gold -= s; e.stolen = (e.stolen || 0) + s; if (s) E('txt', { p: 1, s: '粟-' + s, bad: 1 }); break; }
+        case 'summon': for (let i = 0; i < k; i++) if (B.alive().length < 4) { const x = mkFoe(n); B.en.push(x); nextMove(x, true); E('spawn', { e: x.uid }); } break;
+        case 'eat': for (let i = 0; i < n; i++) { const pile = B.draw.length ? B.draw : B.disc; if (!pile.length) break; const c = pile.splice(R.int(pile.length), 1)[0]; B.gone.push(c); E('txt', { p: 1, s: '吞「' + c.c + '」', bad: 1 }); } break;
+        case 'wipe': Object.assign(P, { str: 0, tstr: 0, blk: 0, thorn: 0, regen: 0, dodge: 0, fort: 0, growth: 0, mastery: 0, barricade: false, ward: 0, reflect: 0 }); B.allies = []; E('txt', { p: 1, s: '抹去', bad: 1 }); break;
+      }
+    }
+  };
+  const foeTurn = e => {
+    if (e.st.burn) { const d = Math.round(e.st.burn * (has('denglong') ? 1.5 : 1)); e.st.burn = Math.floor(e.st.burn / 2); if (!e.st.burn) delete e.st.burn; B.dot(e, d, '灼'); if (!e.alive) return; }
+    if (e.st.poison) { B.dot(e, e.st.poison, '毒'); if (!e.alive) return; }
+    e.blk = 0;
+    if (e.st.stun) { e.st.stun--; if (!e.st.stun) { delete e.st.stun; e.st.imm = 2; } E('txt', { e: e.uid, s: '动弹不得' }); }
+    else { E('foe', { e: e.uid, name: e.mv.name }); foeSteps(e, e.mv.steps); if (e.st.imm) { e.st.imm--; if (!e.st.imm) delete e.st.imm; } if (e.alive) nextMove(e); }
+    for (const k of ['weak', 'vul']) if (e.st[k]) { e.st[k]--; if (!e.st[k]) delete e.st[k]; }
+    if (e.st.wet) { e.st.wet++; if (e.st.wet > 2) delete e.st.wet; }
+  };
+
+  const startTurn = () => {
+    B.turn++; G.st.turns++;
+    if (B.turn > 9) { each(B, e => { e.str++; }); if (B.turn === 10) E('txt', { p: 1, s: '夜深了', bad: 1 }); }
+    if (!P.barricade) { if (P.keep) P.keep = false; else P.blk = has('zhenzhi') ? Math.floor(P.blk / 2) : 0; }
+    P.tstr = 0; P.tthorn = 0; P.retain = false; B.castN = 0; B.used = {}; B.mods.frenzy = false; B.wasHit = false; B.tookLast = B.tookNow; B.tookNow = 0;
+    B.ink = Math.max(0, inkMaxOf(G) + B.nx.ink + (B.turn === 1 && G.boon === 'feibai' ? 2 : 0));
+    if (B.nx.blk) B.block(B.nx.blk); if (B.nx.str) P.str += B.nx.str;
+    if (P.fort) B.block(P.fort); if (P.growth) B.heal(P.growth);
+    if (P.regen) { B.heal(P.regen); P.regen--; }
+    if (P.burn) { B.lose(P.burn); P.burn = Math.floor(P.burn / 2); if (B.over) return; }
+    if (B.nx.all) each(B, e => B.hurt(e, B.nx.all, { raw: 1 }));
+    if (B.over) return;
+    B.drawN(Math.max(1, handOf(G) + B.nx.draw + P.handup + (B.turn === 1 && has('shuicheng') ? 2 : 0)));
+    if (B.nx.seal) { const c = R.shuffle(B.hand.filter(c => !c.sealed && c.c !== '讹')).slice(0, B.nx.seal); c.forEach(x => { x.sealed = true; }); }
+    B.nx = { ink: 0, draw: 0, blk: 0, all: 0, str: 0, seal: 0 };
+    E('turn', { n: B.turn });
+  };
+  // 结束回合：返回一串步骤，界面一步一步放，模拟器一口气跑完
+  B.endSteps = () => {
+    if (B.over || B.pending) return [];
+    const steps = [() => {
+      if (B.allies.length) B.allyAct(1);
+      if (B.over) return;
+      if (has('duanyan') && B.ink > 0) B.block(4 * B.ink);
+      if (has('bixi')) { const k = ['burn', 'weak', 'vul'].find(s => P[s]); if (k) P[k] = 0; }
+      if (!P.retain) B.dumpHand(); else B.hand.forEach(c => { c.sealed = false; });
+      if (P.weak) P.weak--; if (P.vul) P.vul--;
+    }];
+    for (const e of B.en.slice()) steps.push(() => { if (!e.alive || B.over || B.extra) return false; foeTurn(e); });
+    steps.push(() => { if (B.over) return; if (B.extra) { B.extra = false; E('txt', { p: 1, s: '闰' }); } startTurn(); });
+    return steps;
+  };
+  B.endTurn = () => { for (const s of B.endSteps()) s(); };
+
+  B.draw = R.shuffle(G.deck.map(c => ({ c: c.c, up: !!c.up })));
+  for (const id of ids) { const e = mkFoe(id); B.en.push(e); nextMove(e, true); }
+  startTurn();
+  if (has('mochuang')) B.block(8);
+  if (has('xionghuang')) B.en.forEach(e => { if (e.d.tag === '鬼') { B.fst(e, 'weak', 2); B.fst(e, 'vul', 1); } });
+  if (has('suanpan')) P.str += Math.min(3, Math.floor(G.gold / 25));
+  B.ev = [];
+  return B;
+}
+
+// ───────── 一局
+function synergy(G, c) { // 把 c 加进牌库后，c 参与且凑得齐的字
+  const have = {}; for (const d of G.deck) have[d.c] = (have[d.c] || 0) + 1; have[c] = (have[c] || 0) + 1;
+  const out = [];
+  for (const [ch, cs] of CHARS) { if (!cs.includes(c)) continue; const need = {}; for (const x of cs) need[x] = (need[x] || 0) + 1; if (Object.keys(need).every(x => (have[x] || 0) >= need[x])) out.push(ch); }
+  return out;
+}
+function rollComp(G, excl, minRar) {
+  const R = G.rng, pool = [];
+  for (const c in COMPS) { const r = COMPS[c][1]; if (r === 4 || excl.includes(c) || r < (minRar || 1)) continue; const w = [0, 10, 6, 2.5][r] * (1 + 0.15 * Math.min(6, synergy(G, c).length)); pool.push([c, w]); }
+  let t = pool.reduce((s, p) => s + p[1], 0) * R();
+  for (const p of pool) { t -= p[1]; if (t <= 0) return p[0]; }
+  return pool[pool.length - 1][0];
+}
+function rollRelic(G, tier, excl) { const pool = Object.keys(RELICS).filter(id => RELICS[id][2] === tier && !G.relics.includes(id) && !(excl || []).includes(id)); return pool.length ? G.rng.pick(pool) : null; }
+function addRelic(G, id) { if (!id || G.relics.includes(id)) return; G.relics.push(id); if (id === 'bige') { G.max += 12; G.hp += 12; } }
+
+function genMap(G) {
+  const R = G.rng, ROWS = 8, W = 5, nodes = {}, id = (r, c) => r + '-' + c;
+  const starts = R.shuffle([0, 1, 2, 3, 4]).slice(0, 3); starts.push(R.pick(starts));
+  for (const s of starts) {
+    let c = s;
+    for (let r = 0; r < ROWS; r++) {
+      const nd = nodes[id(r, c)] = nodes[id(r, c)] || { id: id(r, c), r, c, next: [], t: 'B' };
+      if (r === ROWS - 1) break;
+      let nc = Math.max(0, Math.min(W - 1, c + R.int(3) - 1));
+      if (nc !== c) { const side = nodes[id(r, nc)]; if (side && side.next.includes(id(r + 1, c))) nc = c; } // 不交叉
+      if (!nd.next.includes(id(r + 1, nc))) nd.next.push(id(r + 1, nc));
+      c = nc;
+    }
+  }
+  const list = Object.values(nodes), parents = {};
+  for (const n of list) for (const x of n.next) (parents[x] = parents[x] || []).push(n);
+  for (const n of list.sort((a, b) => a.r - b.r)) {
+    if (n.r === 0) { n.t = 'B'; continue; }
+    if (n.r === ROWS - 1) { n.t = 'R'; continue; }
+    const pt = (parents[n.id] || []).map(p => p.t);
+    const w = { B: 46, E: 22, S: n.r >= 2 ? 9 : 0, R: n.r >= 3 && n.r < ROWS - 2 ? 9 : 0, X: n.r >= 3 ? 14 : 0 };
+    for (const k of ['S', 'R', 'X']) if (pt.includes(k)) w[k] = 0;
+    let t = R() * (w.B + w.E + w.S + w.R + w.X);
+    for (const k in w) { t -= w[k]; if (t <= 0) { n.t = k; break; } }
+  }
+  for (const k of ['S', 'X']) if (!list.some(n => n.t === k)) { const c = list.filter(n => n.t === 'B' && n.r >= 3 && n.r < ROWS - 1); if (c.length) R.pick(c).t = k; }
+  return { nodes, rows: ROWS, boss: R.pick(ENC[G.act].boss) };
+}
+const choices = G => { const m = G.map; if (!G.at) return Object.values(m.nodes).filter(n => n.r === 0).map(n => n.id); if (G.at === 'boss') return []; const n = m.nodes[G.at]; return n.next.length ? n.next : ['boss']; };
+
+function newRun(o) {
+  const seed = o.seed != null ? o.seed : (Math.random() * 2 ** 31) | 0;
+  const G = { seed, rng: RNG(seed), kit: o.kit, boon: o.boon, asc: o.asc || 0, hp: 0, max: 70, gold: 40, deck: [], relics: [], act: 1, map: null, at: null, floor: 0,
+    seenRun: {}, st: { turns: 0, kills: 0, chars: 0, newc: 0 }, rmCost: 60, upCost: 45, over: null };
+  G.deck = [...KITS[o.kit].deck].map(c => ({ c, up: false }));
+  const b = o.boon;
+  if (b === 'feibai') G.max -= 12; if (b === 'jinshi') G.max -= 8; if (b === 'cangfeng' || b === 'yibi') G.max -= 10;
+  if (b === 'guicai') { G.deck.push({ c: '鬼' }, { c: '鬼' }); G.max -= 5; }
+  if (b === 'kuangcao') G.max -= 14;
+  if (b === 'zhupi') G.deck.forEach(c => { c.up = true; });
+  if (b === 'sujian') { G.gold += 50; addRelic(G, rollRelic(G, 'c')); }
+  if (G.asc >= 5) G.deck.push({ c: '讹' });
+  if (G.asc >= 8) G.max -= 8;
+  G.hp = G.max;
+  G.map = genMap(G);
+  return G;
+}
+const saveRun = G => { const o = Object.assign({}, G, { rng: undefined, rs: G.rng.get() }); STORE.set('gyk-run', JSON.stringify(o)); };
+const loadRun = () => { try { const s = STORE.get('gyk-run'); if (!s) return null; const G = JSON.parse(s); G.rng = RNG(0); G.rng.set(G.rs); return G; } catch (e) { return null; } };
+const clearRun = () => STORE.del('gyk-run');
+
+function visit(G, id) { // 走到一个节点，返回这一格是什么
+  const R = G.rng; G.at = id; G.floor++; (G.path = G.path || []).push(id);
+  if (id === 'boss') return { t: 'battle', B: newBattle(G, [G.map.boss], 'boss') };
+  const n = G.map.nodes[id], enc = ENC[G.act];
+  if (n.t === 'B') return { t: 'battle', B: newBattle(G, R.pick(n.r < 2 ? enc.easy : R.chance(0.2) ? enc.easy : enc.hard), 'normal') };
+  if (n.t === 'X') return { t: 'battle', B: newBattle(G, R.pick(enc.elite), 'elite') };
+  if (n.t === 'S') return { t: 'shop', shop: mkShop(G) };
+  if (n.t === 'R') return { t: 'rest' };
+  const pool = EVENTS.filter(e => !(G.evSeen || []).includes(e.id) && (!e.ok || e.ok(G)));
+  const ev = R.pick(pool.length ? pool : EVENTS); (G.evSeen = G.evSeen || []).push(ev.id);
+  return { t: 'event', ev };
+}
+function mkReward(G, B) {
+  const R = G.rng, kind = B.kind;
+  let gold = kind === 'boss' ? 45 + R.int(15) : kind === 'elite' ? 26 + R.int(10) : 11 + R.int(8);
+  if (G.relics.includes('tongqian')) gold += 8;
+  gold = gainGold(G, gold);
+  if (G.relics.includes('xianglu')) G.hp = Math.min(G.max, G.hp + 5);
+  const drops = R.shuffle([...new Set(B.en.flatMap(e => [...(e.d.drop || '')]))].filter(c => COMPS[c]));
+  const n = 3 + (G.relics.includes('canjuan') ? 1 : 0), comps = [], excl = [];
+  for (const c of drops.slice(0, 2)) { comps.push(c); excl.push(c); }
+  while (comps.length < n) { const c = rollComp(G, excl, kind === 'normal' ? 1 : 2); comps.push(c); excl.push(c); }
+  const rw = { gold, comps: R.shuffle(comps).map(c => ({ c, up: R.chance(kind === 'normal' ? 0.12 : 0.35) })), relic: null, relics: null };
+  if (kind === 'elite') rw.relic = rollRelic(G, 'c');
+  if (kind === 'boss' && G.act < 3) { rw.relics = []; for (let i = 0; i < 3; i++) { const id = rollRelic(G, 'b', rw.relics); if (id) rw.relics.push(id); } G.hp = Math.min(G.max, G.hp + Math.round(G.max * 0.4)); }
+  return rw;
+}
+function nextAct(G) { G.act++; G.at = null; G.path = []; G.map = genMap(G); }
+function mkShop(G) {
+  const R = G.rng, k = G.asc >= 6 ? 1.2 : 1, excl = [], comps = [], relics = [];
+  for (let i = 0; i < 5; i++) { const c = rollComp(G, excl, i >= 3 ? 2 : 1); excl.push(c); const up = R.chance(0.2); comps.push({ c, up, price: Math.round(([0, 30, 45, 62][COMPS[c][1]] + R.int(8) + (up ? 18 : 0)) * k) }); }
+  for (let i = 0; i < 2; i++) { const id = rollRelic(G, 'c', relics.map(r => r.id)); if (id) relics.push({ id, price: Math.round((105 + R.int(40)) * k) }); }
+  return { comps, relics, tea: Math.round(28 * k) };
+}
+function hintNew(G, n) { // 得知 n 个未识之字的写法，优先眼下凑得齐的
+  const have = {}; for (const d of G.deck) have[d.c] = (have[d.c] || 0) + 1;
+  const unk = CHARS.filter(c => !known(c[0])).map(c => c[0]);
+  const can = ch => { const need = {}; for (const x of CH[ch].comps) need[x] = (need[x] || 0) + 1; return Object.keys(need).every(x => (have[x] || 0) >= need[x]); };
+  const a = G.rng.shuffle(unk.filter(can)), b = G.rng.shuffle(unk.filter(ch => !can(ch)));
+  const out = a.concat(b).slice(0, n); out.forEach(ch => { META.hint[ch] = 1; }); saveMeta(); return out;
+}
+const restHeal = G => Math.round(G.max * (G.asc >= 4 ? 0.22 : 0.3));
+function endRun(G, win) {
+  G.over = win ? 'win' : 'lose';
+  META.runs++; if (win) { META.wins++; META.kitWins[G.kit] = (META.kitWins[G.kit] || 0) + 1; if (G.asc >= META.asc && META.asc < 9) META.asc = G.asc + 1; }
+  META.hist.unshift({ kit: G.kit, boon: G.boon, asc: G.asc, win: !!win, act: G.act, floor: G.floor, chars: G.st.chars, newc: G.st.newc, seed: G.seed });
+  META.hist = META.hist.slice(0, 12);
+  saveMeta(); clearRun();
+}
+
+// 典故。opt: l 标签 / d 说明 / ok 可否 / pick 需要先从牌库选一张 / f 执行并返回一句结果
+const rarComp = (G, min) => rollComp(G, [], min);
+const EVENTS = [
+  { id: 'luoshu', t: '洛书', x: '河面浮起一片龟甲，背上的纹路像字，又不是字。', o: [
+    { l: '拓下来', d: '获得一张少见的字根', f: G => { const c = rarComp(G, 2); G.deck.push({ c }); return `你得到了「${c}」。`; } },
+    { l: '捞起来卖掉', d: '粟 +25', f: G => { gainGold(G, 25); return '龟甲换了些粟。'; } }] },
+  { id: 'fenshu', t: '焚书', x: '有人在烧书。火堆旁还有几卷，没来得及扔进去。', o: [
+    { l: '抢一卷出来', d: '失去 6 生命，获得一张朱批字根', f: G => { G.hp = Math.max(1, G.hp - 6); const c = rarComp(G, 2); G.deck.push({ c, up: true }); return `手烫了一下。你得到了朱批的「${c}」。`; } },
+    { l: '把自己的也扔进去', d: '删去一张字根', pick: 1, ok: G => G.deck.length > 5, f: (G, i) => { const c = G.deck.splice(i, 1)[0]; return `「${c.c}」卷起来，黑了。`; } },
+    { l: '走开', d: '', f: () => '你没有回头。' }] },
+  { id: 'xizi', t: '惜字亭', x: '敬惜字纸。亭中有炉，专焚废字。', o: [
+    { l: '捐三十粟', d: '获得一件文房', ok: G => G.gold >= 30, f: G => { G.gold -= 30; const id = rollRelic(G, 'c'); addRelic(G, id); return id ? `守亭人递给你一件「${RELICS[id][0]}」。` : '守亭人点了点头。'; } },
+    { l: '把错字投进炉里', d: '删去牌库里所有「讹」；回复 6', f: G => { G.deck = G.deck.filter(c => c.c !== '讹'); G.hp = Math.min(G.max, G.hp + 6); return '纸灰很轻。'; } },
+    { l: '翻捡字纸', d: '粟 +20，牌库多一张「讹」', f: G => { gainGold(G, 20); G.deck.push({ c: '讹' }); return '纸堆里夹着些钱，也夹着别的。'; } }] },
+  { id: 'cezi', t: '测字先生', x: '「客官，写个字？」他把一方砚推过来。', o: [
+    { l: '测字', d: '花 15 粟，得知 3 个未识之字的写法', ok: G => G.gold >= 15 && dictCount() < TOTAL, f: G => { G.gold -= 15; const a = hintNew(G, 3); return a.length ? '他在纸上写下：' + a.map(ch => `${CH[ch].comps.join('＋')}＝${ch}`).join('，') + '。' : '「你认得的比我多。」'; } },
+    { l: '请他批字', d: '花 35 粟，朱批一张字根', pick: 1, ok: G => G.gold >= 35 && G.deck.some(c => !c.up && c.c !== '讹'), pf: c => !c.up && c.c !== '讹', f: (G, i) => { G.gold -= 35; G.deck[i].up = true; return `「${G.deck[i].c}」上多了一道朱痕。`; } },
+    { l: '走开', d: '', f: () => '「下次再来。」' }] },
+  { id: 'beilin', t: '碑林', x: '荒草里立着许多碑。字被风磨得很浅，但还认得出。', o: [
+    { l: '拓一块', d: '朱批一张字根', pick: 1, ok: G => G.deck.some(c => !c.up && c.c !== '讹'), pf: c => !c.up && c.c !== '讹', f: (G, i) => { G.deck[i].up = true; return `你把「${G.deck[i].c}」描了一遍。`; } },
+    { l: '坐下来读', d: '回复 14', f: G => { G.hp = Math.min(G.max, G.hp + 14); return '读着读着，天亮了一点。'; } }] },
+  { id: 'cuozi', t: '错字鬼', x: '一只小鬼蹲在你的纸上，正偷偷给一个字添笔画。', o: [
+    { l: '由它去', d: '一张字根变成另一张随机字根', pick: 1, f: (G, i) => { const a = G.deck[i].c, c = rollComp(G, [a], 1); G.deck[i].c = c; return `「${a}」被改成了「${c}」。它很得意。`; } },
+    { l: '抓住它', d: '失去 5 生命，获得一张「鬼」', f: G => { G.hp = Math.max(1, G.hp - 5); G.deck.push({ c: '鬼' }); return '它咬了你一口，然后被夹进了纸里。'; } }] },
+  { id: 'qianjin', t: '一字千金', x: '城门上悬着千金：有能增损一字者，予之。', o: [
+    { l: '损一字', d: '删去一张字根，粟 +45', pick: 1, ok: G => G.deck.length > 5, f: (G, i) => { const c = G.deck.splice(i, 1)[0]; gainGold(G, 45); return `你划掉了「${c.c}」。没人能再添回去。`; } },
+    { l: '看看就走', d: '', f: () => '一个字也动不得。' }] },
+  { id: 'guishi', t: '鬼市', x: '半夜的集市。摊主没有影子，只收一种钱。', o: [
+    { l: '以寿换字', d: '生命上限 -6，获得「鬼」和一张罕见字根', f: G => { G.max -= 6; G.hp = Math.min(G.hp, G.max); const c = rarComp(G, 3); G.deck.push({ c: '鬼' }, { c }); return `你得到了「鬼」和「${c}」。`; } },
+    { l: '以寿换物', d: '生命上限 -8，获得一件文房', f: G => { G.max -= 8; G.hp = Math.min(G.hp, G.max); const id = rollRelic(G, 'c'); addRelic(G, id); return id ? `你得到了「${RELICS[id][0]}」。` : '摊主摇了摇头。'; } },
+    { l: '离开', d: '', f: () => '天快亮了。' }] },
+  { id: 'miao', t: '仓颉庙', x: '庙很小。塑像有四只眼睛。', o: [
+    { l: '上香', d: '回复 20', f: G => { G.hp = Math.min(G.max, G.hp + 20); return '香烧得很慢。'; } },
+    { l: '求字', d: '获得两张少见的字根', f: G => { const a = rarComp(G, 2), b = rollComp(G, [a], 2); G.deck.push({ c: a }, { c: b }); return `你得到了「${a}」和「${b}」。`; } },
+    { l: '求教', d: '得知 2 个未识之字的写法', ok: () => dictCount() < TOTAL, f: G => { const a = hintNew(G, 2); return a.length ? '你忽然想起：' + a.map(ch => `${CH[ch].comps.join('＋')}＝${ch}`).join('，') + '。' : '没有回应。'; } }] },
+  { id: 'yeyu', t: '夜雨', x: '夜里下起雨来。落在瓦上的声音不像水，像米。', o: [
+    { l: '出去接', d: '粟 +30', f: G => { gainGold(G, 30); return '天雨粟。'; } },
+    { l: '就这么听着', d: '生命上限 +5', f: G => { G.max += 5; G.hp += 5; return '你睡得很好。'; } }] },
+  { id: 'wenziyu', t: '盘查', x: '差役拦住路：「身上带了什么字？」', o: [
+    { l: '交出一张', d: '随机失去一张字根', ok: G => G.deck.length > 5, f: G => { const c = G.deck.splice(G.rng.int(G.deck.length), 1)[0]; return `他抽走了「${c.c}」。`; } },
+    { l: '塞钱', d: '粟 -25', ok: G => G.gold >= 25, f: G => { G.gold -= 25; return '他掂了掂，让开了。'; } },
+    { l: '硬闯', d: '失去 9 生命', f: G => { G.hp = Math.max(1, G.hp - 9); return '你挨了几棍。'; } }] },
+  { id: 'wuzibei', t: '无字碑', x: '一块碑，上面什么也没有。', o: [
+    { l: '写上去', d: '复制一张字根', pick: 1, pf: c => c.c !== '讹', f: (G, i) => { const c = G.deck[i]; G.deck.push({ c: c.c, up: c.up }); return `碑上有了一个「${c.c}」。你的纸上也还有一个。`; } },
+    { l: '靠着歇一会儿', d: '回复 10', f: G => { G.hp = Math.min(G.max, G.hp + 10); return '石头是凉的。'; } }] },
+];
+
+// 鬼夜哭 · 界面
+const $ = (s, r) => (r || document).querySelector(s);
+const QS = new URLSearchParams(location.search);
+let SPEED = QS.has('speed') ? +QS.get('speed') : 1;
+const sleep = ms => new Promise(r => setTimeout(r, ms * SPEED));
+const app = $('#app'), floatEl = $('#float'), modalEl = $('#modal'), tipEl = $('#tip');
+let G = null, B = null, scr = 'title', sel = [], tgi = 0, busy = false, cur = {};
+const ui = { pick: null, dch: null, dictBack: null, pickCb: null, sorted: -1, meHp: 0 };
+const esc = s => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+const tip = s => ` data-tip="${esc(s)}"`;
+const ORDER = Object.keys(COMPS);
+const byComp = (a, b) => ORDER.indexOf(a.c) - ORDER.indexOf(b.c);
+const elOf = c => (CH[c] ? CH[c].el : '');
+window.addEventListener('error', e => { window.__err = (window.__err || '') + e.message + ' @' + e.lineno + '\n'; });
+
+const GL_KEYS = Object.keys(GLOSS).filter(k => !['墨', '讹', '朱批', '畏', '抗'].includes(k));
+const glossOf = t => GL_KEYS.filter(k => new RegExp('(^|[ ；，、：「（])' + k + '($|[ ；，、。0-9+」「）])').test(t));
+const glHtml = t => glossOf(t).map(k => `<b>${k}</b> ${GLOSS[k]}`).join('<br>');
+const withGl = t => { const g = glHtml(t); return t + (g ? '<hr>' + g : ''); };
+
+// ───────── 声音
+const AU = { ctx: null };
+function au() { if (META.mute || SPEED === 0) return null; if (!AU.ctx) { try { AU.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; } } if (AU.ctx.state === 'suspended') AU.ctx.resume(); return AU.ctx; }
+function tone(f, d, o) { const c = au(); if (!c) return; o = o || {}; const t = c.currentTime + (o.at || 0), os = c.createOscillator(), g = c.createGain(); os.type = o.type || 'triangle'; os.frequency.setValueAtTime(f, t); if (o.to) os.frequency.exponentialRampToValueAtTime(o.to, t + d); g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(o.v || 0.09, t + 0.008); g.gain.exponentialRampToValueAtTime(0.0001, t + d); os.connect(g).connect(c.destination); os.start(t); os.stop(t + d + 0.03); }
+function noise(d, o) { const c = au(); if (!c) return; o = o || {}; const n = (c.sampleRate * d) | 0, b = c.createBuffer(1, n, c.sampleRate), ch = b.getChannelData(0); for (let i = 0; i < n; i++) ch[i] = (Math.random() * 2 - 1) * (1 - i / n); const s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain(); s.buffer = b; f.type = o.type || 'bandpass'; f.frequency.value = o.f || 1800; f.Q.value = 0.7; g.gain.value = o.v || 0.12; s.connect(f).connect(g).connect(c.destination); s.start(c.currentTime + (o.at || 0)); }
+const PENTA = [196, 220, 261.6, 293.7, 329.6, 392, 440, 523.3, 587.3, 659.3, 784];
+const sfx = {
+  tap: i => tone(PENTA[i % 10] * 2, 0.25, { v: 0.05 }),
+  cast: n => { noise(0.28, { f: 2400, v: 0.1 }); tone(PENTA[1 + n], 0.7, { v: 0.08 }); if (n > 1) tone(PENTA[3 + n], 0.7, { v: 0.06, at: 0.05 }); if (n > 2) tone(PENTA[6 + n], 0.8, { v: 0.05, at: 0.1 }); },
+  hit: () => { tone(150, 0.14, { type: 'sine', to: 55, v: 0.22 }); noise(0.07, { f: 900, v: 0.1 }); },
+  phit: () => { tone(110, 0.22, { type: 'sine', to: 40, v: 0.3 }); noise(0.12, { f: 400, v: 0.16, type: 'lowpass' }); },
+  blk: () => tone(520, 0.08, { type: 'square', v: 0.03 }),
+  heal: () => { tone(523, 0.3, { v: 0.05 }); tone(784, 0.4, { v: 0.04, at: 0.08 }); },
+  gold: () => { tone(1568, 0.12, { v: 0.04 }); tone(2093, 0.18, { v: 0.035, at: 0.06 }); },
+  bad: () => tone(196, 0.3, { type: 'sawtooth', to: 110, v: 0.05 }),
+  newc: () => [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.7, { v: 0.06, at: i * 0.09 })),
+  die: () => { noise(0.5, { f: 600, v: 0.14, type: 'lowpass' }); tone(330, 0.5, { to: 80, v: 0.07, type: 'sine' }); },
+  nope: () => tone(140, 0.12, { type: 'square', v: 0.04 }),
+  turn: () => tone(98, 0.5, { type: 'sine', v: 0.12 }),
+  win: () => [392, 523, 659, 784].forEach((f, i) => tone(f, 0.9, { v: 0.07, at: i * 0.12 })),
+  lose: () => [330, 262, 196, 147].forEach((f, i) => tone(f, 1.1, { v: 0.07, at: i * 0.2, type: 'sine' })),
+};
+
+// ───────── 粒子
+const fxc = $('#fx'), fxx = fxc.getContext('2d'); let parts = [], fxOn = false, DPR = 1;
+function fxSize() { DPR = Math.min(2, window.devicePixelRatio || 1); fxc.width = innerWidth * DPR; fxc.height = innerHeight * DPR; }
+addEventListener('resize', fxSize); fxSize();
+function fxLoop() {
+  fxx.clearRect(0, 0, fxc.width, fxc.height); parts = parts.filter(p => p.life > 0);
+  for (const p of parts) { p.life -= 1 / 60; p.vy += p.g; p.x += p.vx; p.y += p.vy; fxx.globalAlpha = Math.max(0, Math.min(1, p.life * 2.5)); fxx.fillStyle = p.c; fxx.beginPath(); if (p.grain) fxx.ellipse(p.x * DPR, p.y * DPR, p.r * DPR, p.r * 1.8 * DPR, p.rot, 0, 7); else fxx.arc(p.x * DPR, p.y * DPR, p.r * DPR, 0, 7); fxx.fill(); }
+  fxx.globalAlpha = 1; if (parts.length) requestAnimationFrame(fxLoop); else fxOn = false;
+}
+function fxAdd(a) { if (SPEED === 0) return; parts.push(...a); if (parts.length > 700) parts.splice(0, parts.length - 700); if (!fxOn) { fxOn = true; requestAnimationFrame(fxLoop); } }
+function splash(el, c, n) { if (!el) return; const r = el.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height * 0.42, a = []; for (let i = 0; i < n; i++) { const an = Math.random() * 6.28, sp = 1 + Math.random() * 6; a.push({ x, y, vx: Math.cos(an) * sp, vy: Math.sin(an) * sp - 1.5, g: 0.25, r: 1 + Math.random() * 3.2, c, life: 0.35 + Math.random() * 0.5 }); } fxAdd(a); }
+function grainRain(n) { const a = []; for (let i = 0; i < n; i++) a.push({ x: Math.random() * innerWidth, y: -10 - Math.random() * 300, vx: -0.4 + Math.random() * 0.3, vy: 5 + Math.random() * 4, g: 0.05, r: 1.5 + Math.random() * 1.2, c: '#dcb65e', life: 1.3 + Math.random() * 0.7, grain: 1, rot: Math.random() * 3 }); fxAdd(a); }
+function floatAt(el, s, cls, dy) { if (!el || SPEED === 0) return; const r = el.getBoundingClientRect(), d = document.createElement('div'); d.className = 'flt ' + cls; d.textContent = s; d.style.left = r.left + r.width / 2 + (Math.random() * 36 - 18) + 'px'; d.style.top = r.top + r.height * 0.4 + (dy || 0) + 'px'; floatEl.appendChild(d); setTimeout(() => d.remove(), 900); }
+function banner(html, cls) { if (SPEED === 0) return; const d = document.createElement('div'); d.className = 'banner ' + (cls || ''); d.innerHTML = html; floatEl.appendChild(d); setTimeout(() => d.remove(), 2000); }
+
+// ───────── 提示
+function showTip(el) { tipEl.innerHTML = el.dataset.tip; tipEl.style.display = 'block'; const r = el.getBoundingClientRect(), w = tipEl.offsetWidth, h = tipEl.offsetHeight; let x = r.left + r.width / 2 - w / 2, y = r.top - h - 8; x = Math.max(8, Math.min(innerWidth - w - 8, x)); if (y < 8) y = r.bottom + 8; tipEl.style.left = x + 'px'; tipEl.style.top = y + 'px'; }
+function hideTip() { tipEl.style.display = 'none'; }
+let tipT;
+document.addEventListener('mouseover', e => { const el = e.target.closest && e.target.closest('[data-tip]'); if (el) showTip(el); else hideTip(); });
+document.addEventListener('touchstart', e => { const el = e.target.closest && e.target.closest('[data-tip]'); clearTimeout(tipT); if (el) { showTip(el); tipT = setTimeout(hideTip, 2800); } else hideTip(); }, { passive: true });
+
+// ───────── 弹层
+function modal(html) { modalEl.innerHTML = `<div class="dlg">${html}</div>`; modalEl.classList.add('on'); hideTip(); }
+function closeModal() { modalEl.classList.remove('on'); modalEl.innerHTML = ''; ui.pickCb = null; }
+modalEl.addEventListener('click', e => { if (e.target === modalEl) closeModal(); });
+const cardHtml = (c, cls, attr) => `<span class="card ${cls || ''} el-${elOf(c.c)} ${c.up ? 'up' : ''} ${c.c === '讹' ? 'bad' : ''}" ${attr || ''}>${c.c}</span>`;
+function help() {
+  modal(`<h2>怎么玩</h2><ul>
+    <li>手里是<b>字根</b>。点选 1～3 张，拼成一个字，花 <b>1 点墨</b>写出来。</li>
+    <li>字是什么意思，就有什么用。<b>日＋月＝明</b>，<b>人＋木＝休</b>，<b>火＋火＝炎</b>。你认得多少字，就有多少招。</li>
+    <li>一个字不管用了几张字根，都只耗 1 墨。所以尽量拼大字。</li>
+    <li>拼得出但没写过的字，游戏不会告诉你是什么，只会说「这一手里还藏着几个」。自己找。</li>
+    <li>第一次写出一个字，<b>天雨粟</b>。粟可以在墨庄买东西。</li>
+    <li>敌人头顶写着它这回合要做什么。打败它，从它身上<b>拆字根</b>。</li>
+    <li>键盘：数字键选字根，回车落笔，空格结束回合，←→ 换目标。</li></ul>
+    <div class="acts"><button class="btn red" data-act="close">知道了</button></div>`);
+}
+function deckModal() {
+  const grp = (t, a) => (a.length ? `<h3>${t} · ${a.length}</h3><div class="cards">${a.slice().sort(byComp).map(c => cardHtml(c, 'sm', tip(cardTip(c)))).join('')}</div>` : '');
+  modal(`<h2>字根</h2>${B ? grp('牌堆', B.draw) + grp('弃牌堆', B.disc) + grp('手牌', B.hand) + grp('本场已失', B.gone) : grp('全部', G.deck)}
+    ${G.relics.length ? `<h3>文房</h3>${G.relics.map(id => `<p><b style="color:#ef8d7d">${RELICS[id][0]}</b>　${RELICS[id][1]}</p>`).join('')}` : ''}
+    ${G.boon ? `<h3>砚铭</h3><p><b style="color:var(--paper2)">${BOONS[G.boon][0]}</b>　${BOONS[G.boon][1]}</p>` : ''}
+    <div class="acts"><button class="btn" data-act="close">合上</button></div>`);
+}
+function menuModal() {
+  modal(`<h2>${KITS[G.kit].n}${G.asc ? ' · 墨阶 ' + G.asc : ''}</h2><div class="menu">
+    <button class="btn" data-act="close">接着写</button><button class="btn" data-act="dict">字典　${dictCount()} / ${TOTAL}</button>
+    <button class="btn" data-act="help">怎么玩</button><button class="btn" data-act="mute">${META.mute ? '音效：关' : '音效：开'}</button>
+    <button class="btn" data-act="quit">搁笔（放弃这一局）</button></div>`);
+}
+function pickCard(title, pf, cb) {
+  const idx = G.deck.map((c, i) => i).sort((a, b) => byComp(G.deck[a], G.deck[b]));
+  modal(`<h2>${title}</h2><p class="lead">选一张字根。</p><div class="cards">${idx.map(i => { const c = G.deck[i], ok = !pf || pf(c); return `<button class="card sm el-${elOf(c.c)} ${c.up ? 'up' : ''} ${c.c === '讹' ? 'bad' : ''}" data-act="pk" data-i="${i}" ${ok ? '' : 'disabled style="opacity:.25"'}>${c.c}</button>`; }).join('')}</div><div class="acts"><button class="btn" data-act="close">算了</button></div>`);
+  ui.pickCb = cb;
+}
+
+// ───────── 画面
+const SCR = {};
+function go(s) { scr = s; render(); }
+function render() {
+  hideTip();
+  const inRun = G && ['map', 'battle', 'reward', 'shop', 'rest', 'event'].includes(scr);
+  if (scr === 'battle' && B && ui.sorted !== B.turn) { ui.sorted = B.turn; B.hand.sort(byComp); }
+  document.body.classList.toggle('run', !!inRun);
+  app.innerHTML = (inRun ? hud() : '') + SCR[scr]();
+  if (scr === 'map') { const w = $('.mapwrap'), n = $('.nd.can'); if (w && n) { const r = n.getBoundingClientRect(), wr = w.getBoundingClientRect(); w.scrollTop += r.top - wr.top - wr.height * 0.6; } }
+  if (scr === 'battle' && B) ui.meHp = G.hp;
+}
+function hud() {
+  return `<header class="hud">
+    <span class="hp"${tip('生命')}><i>命</i>${G.hp}<small> / ${G.max}</small></span>
+    <span class="gold"${tip('粟。写出这一局没写过的字，天上就掉粟。')}><i>粟</i>${G.gold}</span>
+    <span class="where">${ACTS[G.act][0]} · ${ACTS[G.act][1]}</span>
+    <span class="boon"${tip(`<b>砚铭 · ${BOONS[G.boon][0]}</b><br>${BOONS[G.boon][1]}`)}>${BOONS[G.boon][0]}</span>
+    <span class="relics">${G.relics.map(id => `<b class="relic"${tip(`<b>${RELICS[id][0]}</b><br>${RELICS[id][1]}`)}>${RELICS[id][0][0]}</b>`).join('')}</span>
+    <button class="btn" data-act="deck">字根 ${G.deck.length}</button><button class="btn" data-act="menu">☰</button></header>`;
+}
+
+SCR.title = () => {
+  const save = loadRun(), n = dictCount();
+  return `<div class="title">
+    <div class="quote">昔者仓颉作书，而天雨粟，鬼夜哭。<small>——《淮南子·本经训》</small></div>
+    <h1><span>鬼</span><span>夜</span><span>哭</span></h1>
+    <p class="sub">把字根拼成字，把鬼写哭</p>
+    <div class="menu">
+      ${save ? `<button class="btn red" data-act="resume">续写</button><button class="btn" data-act="new"><span>另起一篇</span><small>${KITS[save.kit].n} · ${ACTS[save.act][0]}作废</small></button>` : `<button class="btn red" data-act="new">提笔</button>`}
+      <button class="btn" data-act="dict"><span>字典</span><small>${n} / ${TOTAL}</small></button>
+      <button class="btn" data-act="help"><span>怎么玩</span><small></small></button>
+      <button class="btn" data-act="mute"><span>音效</span><small>${META.mute ? '关' : '开'}</small></button>
+    </div>
+    <div class="foot">${META.runs ? `写过 ${META.runs} 局，成 ${META.wins} 局${META.asc ? '　·　墨阶 ' + META.asc + ' 已开' : ''}` : ''}</div></div>`;
+};
+
+function openPick() {
+  const n = dictCount(), R = RNG((Math.random() * 1e9) | 0);
+  const un = KITS.map((k, i) => i).filter(i => KITS[i].need <= n);
+  const kits = un.length <= 3 ? un : R.shuffle(un.slice()).slice(0, 3).sort((a, b) => a - b);
+  ui.pick = { kits, boons: R.shuffle(Object.keys(BOONS)).slice(0, 3), kit: null, boon: null, asc: Math.min(META.asc, META.lastAsc || 0), next: KITS.find(k => k.need > n) };
+  go('pick');
+}
+SCR.pick = () => {
+  const p = ui.pick;
+  return `<div class="body"><h2>提笔</h2><p class="lead">每一局的笔和砚铭都是随机摆出来的。</p>
+    <h3>选一支笔 · 起手字根</h3><div class="grid3">${p.kits.map(i => { const k = KITS[i]; return `<button class="opt ${p.kit === i ? 'on' : ''}" data-act="pkit" data-i="${i}"><b>${k.n}</b>${META.kitWins[i] ? `<small>成 ${META.kitWins[i]}</small>` : ''}<p>${k.d}</p><span class="mini">${[...k.deck].map(c => `<span>${c}</span>`).join('')}</span></button>`; }).join('')}</div>
+    ${p.next ? `<p class="muted" style="margin-top:8px">字典识满 ${p.next.need} 字，解锁新笔「${p.next.n}」（现在 ${dictCount()}）。</p>` : ''}
+    <h3>选一方砚铭 · 这一局的规矩</h3><div class="grid3">${p.boons.map(id => `<button class="opt ${p.boon === id ? 'on' : ''}" data-act="pboon" data-id="${id}"><b>${BOONS[id][0]}</b><p>${BOONS[id][1]}</p></button>`).join('')}</div>
+    <div class="foot-bar"><button class="btn" data-act="home">返回</button>
+      ${META.asc ? `<span class="stepper"${tip(ASC.slice(1, p.asc + 1).map((s, i) => `${i + 1}　${s}`).join('<br>') || '没有额外难度')}>墨阶 <button class="btn sm" data-act="asc" data-d="-1">−</button><b>${p.asc}</b><button class="btn sm" data-act="asc" data-d="1">＋</button></span>` : ''}
+      <button class="btn red" data-act="start" ${p.kit == null || !p.boon ? 'disabled' : ''}>落笔</button></div></div>`;
+};
+
+SCR.map = () => {
+  const m = G.map, W = 520, RH = 74, H = m.rows * RH + 150, path = G.path || [], can = choices(G);
+  const jit = id => { let h = 7; for (const ch of id + G.seed + G.act) h = (Math.imul(h, 31) + ch.charCodeAt(0)) | 0; return [((h & 255) / 255 - 0.5) * 34, (((h >> 8) & 255) / 255 - 0.5) * 20]; };
+  const pos = id => { if (id === 'boss') return [W / 2, 62]; const d = m.nodes[id], j = jit(id); return [70 + d.c * 95 + j[0], H - 46 - d.r * RH + j[1]]; };
+  const G_ = { B: '战', X: '凶', E: '奇', S: '市', R: '茶' };
+  let ed = '', nd = '';
+  for (const n of Object.values(m.nodes)) for (const x of n.next.length ? n.next : ['boss']) { const a = pos(n.id), b = pos(x), on = path.includes(n.id) && path.includes(x), cn = G.at === n.id && can.includes(x); ed += `<path class="ed ${on ? 'on' : cn ? 'can' : ''}" d="M${a[0]} ${a[1]} Q${a[0]} ${(a[1] + b[1]) / 2} ${b[0]} ${b[1]}"/>`; }
+  for (const n of Object.values(m.nodes)) { const p = pos(n.id), c = can.includes(n.id); nd += `<g class="nd t-${n.t} ${path.includes(n.id) ? 'done' : ''} ${G.at === n.id ? 'now' : ''} ${c ? 'can' : ''}" ${c ? `data-act="go" data-id="${n.id}"` : ''} transform="translate(${p[0]} ${p[1]})"><circle r="21"/><text>${G_[n.t]}</text></g>`; }
+  const bc = can.includes('boss'), bd = EN[m.boss];
+  nd += `<g class="nd boss ${bc ? 'can' : ''}" ${bc ? 'data-act="go" data-id="boss"' : ''} transform="translate(${W / 2} 62)"><circle r="40"/><text>${bd.ch}</text></g><text class="lbl" x="${W / 2}" y="122">${ACTS[G.act][0]}之主 · ${bd.n}</text>`;
+  return `<div class="legend"><span><b>战</b>小鬼</span><span><b style="color:#ef8d7d">凶</b>大鬼，掉文房</span><span><b style="color:var(--W)">奇</b>典故</span><span><b style="color:var(--gold)">市</b>墨庄</span><span><b style="color:var(--M)">茶</b>茶寮</span></div>
+    <div class="mapwrap"><svg class="map" viewBox="0 0 ${W} ${H}">${ed}${nd}</svg></div>`;
+};
+
+// ── 战斗
+const P_ST = [['str', '力', 'good', '力'], ['tstr', '力·本回合', 'good', '力'], ['dodge', '闪', 'good', '闪'], ['thorn', '荆', 'good', '荆'], ['tthorn', '荆·本回合', 'good', '荆'], ['regen', '愈', 'good', '愈'], ['ward', '御', 'good', '御'], ['reflect', '代', 'good', '代'],
+  ['fort', '垒', 'good', 0, '每回合开始获得等量护盾'], ['growth', '苗', 'good', 0, '每回合开始回复等量生命'], ['handup', '拓', 'good', 0, '每回合多抽等量字根'], ['mastery', '历', 'good', 0, '所有字数值提升这么多（%）'],
+  ['weak', '弱', 'bad', '弱'], ['vul', '伤', 'bad', '伤'], ['burn', '灼', 'bad', '灼']];
+const E_ST = [['burn', '灼'], ['poison', '毒'], ['wet', '湿'], ['weak', '泣'], ['vul', '破'], ['stun', '困'], ['conf', '乱'], ['blind', '盲']];
+const chip = (label, cls, t) => `<span class="st ${cls}"${tip(t)}>${label}</span>`;
+function meSts() {
+  const P = B.pl, M = B.mods, N = B.nx; let s = '';
+  if (P.blk) s += chip('护盾 ' + P.blk, 'blk', '<b>护盾</b> ' + GLOSS.护盾);
+  for (const [k, n, cls, g, t] of P_ST) if (P[k]) s += chip(n + ' ' + P[k], cls, `<b>${n}</b> ${g ? GLOSS[g] : t}`);
+  if (P.barricade) s += chip('定', 'good', '护盾不再清零'); else if (P.keep) s += chip('留', 'good', '护盾保留到下回合');
+  if (P.retain) s += chip('持', 'good', '本回合手牌不弃'); if (P.soul) s += chip('魂', 'good', '下一次生命归零时保留 10 点');
+  if (M.free) s += chip('免墨 ' + M.free, 'good', '下一个字不耗墨'); if (M.twice) s += chip('再写 ' + M.twice, 'good', '下一个字施放两次');
+  if (M.nmul !== 1) s += chip('下一字 ×' + fm(M.nmul), 'good', '下一个字数值倍率'); if (M.natk !== 1) s += chip('下一击 ×' + fm(M.natk), 'good', '下一个攻击字伤害倍率');
+  if (M.child) s += chip('童', 'good', '下一个单写的字根数值 ×3'); if (M.frenzy) s += chip('狂', 'bad', '本回合写字不耗墨，每写一个字失去 3 生命');
+  const nx = []; if (N.ink) nx.push('墨' + (N.ink > 0 ? '+' : '') + N.ink); if (N.draw) nx.push('抽+' + N.draw); if (N.blk) nx.push('护盾+' + N.blk); if (N.str) nx.push('力+' + N.str); if (N.all) nx.push('全体 ' + N.all); if (N.seal) nx.push('封 ' + N.seal);
+  if (nx.length) s += chip('下回合 ' + nx.join(' '), 'nx', '下回合开始时生效' + (N.seal ? '<hr><b>封</b> ' + GLOSS.封 : ''));
+  return s + B.allies.map(a => `<span class="ally"${tip(`<b>随从 · ${a}</b><br>${ALLY[a]}`)}>${a}</span>`).join('');
+}
+function foeHtml(e, i) {
+  if (!e.alive) return e.d.minion ? '' : `<div class="foe dead"></div>`;
+  const it = B.intent(e), d = e.d;
+  const intent = it.stun ? `<span class="intent stun"${tip('<b>困</b> ' + GLOSS.困)}>动弹不得</span>` : `<span class="intent"${tip(`<b>${it.name}</b><br>${it.desc}`)}>${it.k ? `<b>攻 ${it.atk}${it.k > 1 ? '×' + it.k : ''}</b>` : ''}${it.tags.map(t => `<em>${t}</em>`).join('')}</span>`;
+  let st = ''; if (e.blk) st += chip('护盾 ' + e.blk, 'blk', '抵挡伤害，它行动前清零'); if (e.str) st += chip('力 ' + (e.str > 0 ? '+' : '') + e.str, e.str > 0 ? 'bad' : 'good', '每段攻击伤害 ' + (e.str > 0 ? '+' : '') + e.str);
+  for (const [k, n] of E_ST) if (e.st[k]) st += chip(k === 'wet' ? n : n + ' ' + e.st[k], 'good', `<b>${n}</b> ${GLOSS[n]}`);
+  if (e.st.imm) st += chip('警', 'bad', '刚挣脱，暂时困不住');
+  return `<div class="foe ${d.boss ? 'boss' : d.elite ? 'elite' : d.minion ? 'small' : ''} ${i === tgi ? 'tg' : ''}" data-act="foe" data-i="${i}" data-uid="${e.uid}" data-hp="${e.hp}" data-max="${e.max}">
+    ${intent}<div class="glyph">${e.ch}</div>
+    <div class="fname">${e.n}${d.fear ? `<em class="el-${d.fear}"${tip(`<b>畏${ELN[d.fear]}</b> ` + GLOSS.畏)}>畏${ELN[d.fear]}</em>` : ''}${d.resist ? `<em class="el-${d.resist}"${tip(`<b>抗${ELN[d.resist]}</b> ` + GLOSS.抗)}>抗${ELN[d.resist]}</em>` : ''}${d.revive && !e.revived ? `<em style="color:var(--dim)"${tip('第一次被打散后会重聚')}>重聚</em>` : ''}</div>
+    <div class="hpbar"><i style="width:${(100 * e.hp) / e.max}%"></i><span>${e.hp} / ${e.max}</span></div><div class="sts">${st}</div></div>`;
+}
+const cardTip = c => (c.c === '讹' ? '<b>讹</b> ' + GLOSS.讹 : withGl(`<b>${c.c}</b>${elOf(c.c) ? '（' + ELN[elOf(c.c)] + '）' : ''}　单写：${descChar(c.c)}`) + (c.up ? '<hr><b>朱批</b> ' + GLOSS.朱批 : '') + (c.tmp ? '<hr>临时的，用后即散' : '') + (c.sealed ? '<hr><b>封</b> ' + GLOSS.封 : ''));
+function resTile(ch, cards, multi) {
+  const d = CH[ch], m = B.mulOf(d, cards), desc = descChar(ch, m), isNew = d.n > 1 && !META.dict[ch];
+  const cost = B.costOf(), can = !busy && B.canCast() && B.ink >= cost, why = !B.canCast() ? '写不了了' : B.ink < cost ? '墨尽' : '';
+  const gl = multi ? '' : glHtml(desc);
+  return `<button class="res el-${d.el}" data-act="cast" data-ch="${ch}" ${can ? '' : 'disabled'}><span class="big ${isNew ? 'new' : ''}">${ch}</span>
+    <span class="txt"><b>${d.n > 1 ? d.comps.join(' ＋ ') : ch === '讹' ? '错字' : '单写'}${d.el ? `<small style="color:var(--${d.el})">${ELN[d.el]}</small>` : ''}${Math.abs(m - 1) > 0.001 ? `<small>×${fm(m)}</small>` : ''}${d.note ? `<small>${d.note}</small>` : ''}</b><p>${desc}</p>${gl ? `<div class="gl">${gl}</div>` : ''}</span>
+    <span class="go">${why || (cost ? '落笔' : '免墨')}</span></button>`;
+}
+function deskHtml() {
+  if (B.pending) return `<div class="ask">${B.pending.kind === 'sell' ? '点一张手牌，把它永久卖掉（粟 +12）' : '点一张手牌，复制两张'}</div>`;
+  if (sel.length) {
+    const cards = sel.map(i => B.hand[i]), r = RECIPE[keyOf(cards.map(c => c.c))];
+    if (!r) return `<div class="res nope">${cards.map(c => c.c).join(' ＋ ')}　不成字</div>`;
+    return `<div class="resl ${r.length > 1 ? 'multi' : ''}">${r.map(ch => resTile(ch, cards, r.length > 1)).join('')}</div>`;
+  }
+  if (!B.hand.length) return `<div class="hintbox"><span class="muted">手里没有字根了。</span></div>`;
+  const opts = B.options().filter(o => CH[o.ch].n > 1), kn = opts.filter(o => known(o.ch)).sort((a, b) => CH[b.ch].n - CH[a.ch].n), un = opts.length - kn.length;
+  return `<div class="hintbox"><div class="chips">${kn.length ? '<span class="muted">可写</span>' + kn.slice(0, 18).map(o => { const d = CH[o.ch]; return `<button class="chip n${d.n} el-${d.el} ${META.dict[o.ch] ? '' : 'hintd'}" data-act="chip" data-i="${o.idxs.join(',')}"${tip(`<b>${o.ch}</b>＝${d.comps.join('＋')}<br>${descChar(o.ch, B.mulOf(d, o.idxs.map(i => B.hand[i])))}`)}>${o.ch}</button>`; }).join('') : '<span class="muted">点选 1～3 张字根，拼成一个字。单独一张也能写。</span>'}</div>
+    ${un ? `<div class="unk">这一手里还藏着 ${un} 个你没写过的字。</div>` : kn.length ? '<div class="muted">点上面的字直接选好字根，或者自己拼。</div>' : ''}</div>`;
+}
+SCR.battle = () => {
+  if (!B.en[tgi] || !B.en[tgi].alive) tgi = Math.max(0, B.en.findIndex(e => e.alive));
+  const im = inkMaxOf(G), n = Math.max(im, B.ink);
+  return `<div class="battle"><div class="foes">${B.en.map(foeHtml).join('')}</div>
+    <div class="me"><div class="hpbar"><i style="width:${(100 * G.hp) / G.max}%"></i><span>${G.hp} / ${G.max}</span></div><div class="sts">${meSts()}</div></div>
+    <div class="desk">${deskHtml()}</div>
+    <div class="handbar"><div class="hand">${B.hand.map((c, i) => `<button class="card el-${elOf(c.c)} ${c.up ? 'up' : ''} ${c.tmp ? 'tmp' : ''} ${c.sealed ? 'sealed' : ''} ${c.c === '讹' ? 'bad' : ''} ${sel.includes(i) ? 'sel' : ''}" data-act="card" data-i="${i}"${tip(cardTip(c))}>${c.c}</button>`).join('')}</div>
+      <div class="side"><div class="inks"${tip('<b>墨</b> ' + GLOSS.墨)}><b>墨</b>${n <= 6 ? Array.from({ length: n }, (_, i) => `<i class="${i < B.ink ? 'f' : ''}"></i>`).join('') : `<i class="f"></i><b>×${B.ink}</b>`}</div>
+        <button class="btn" data-act="end" ${busy || B.pending ? 'disabled' : ''}>结束回合</button><div class="piles">牌堆 ${B.draw.length}　弃 ${B.disc.length}</div></div></div></div>`;
+};
+
+const foeEl = uid => $(`.foe[data-uid="${uid}"]`);
+function bump(el, cls) { if (!el) return; el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); setTimeout(() => el.classList.remove(cls), 380); }
+function setBar(el, hp, max) { if (!el) return; const b = $('.hpbar', el); if (!b) return; hp = Math.max(0, hp); $('i', b).style.width = (100 * hp) / max + '%'; $('span', b).textContent = hp + ' / ' + max; }
+async function play(evs) {
+  if (SPEED === 0) return;
+  const meRow = $('.me'), me = $('.me .hpbar');
+  for (const ev of evs) {
+    const fe = ev.e ? foeEl(ev.e) : null;
+    switch (ev.k) {
+      case 'cast': { const d = document.createElement('div'); d.className = 'castglyph el-' + (ev.el || '') + (ev.sub ? ' sub' : ''); d.innerHTML = ev.ch + (ev.times > 1 ? `<small>×${ev.times}</small>` : ''); floatEl.appendChild(d); setTimeout(() => d.remove(), 700); sfx.cast(ev.n); await sleep(ev.sub ? 240 : 330); break; }
+      case 'hit': if (fe) { floatAt(fe, ev.n ? '-' + ev.n : ev.ab ? '挡' : '0', ev.fear ? 'crit' : ev.res ? 'res' : 'dmg'); if (ev.n) { bump(fe, 'shake'); splash(fe, ev.fear ? '#ffd76a' : '#d5e6ee', Math.min(26, 5 + ev.n)); fe.dataset.hp -= ev.n; setBar(fe, +fe.dataset.hp, +fe.dataset.max); sfx.hit(); } else sfx.blk(); } await sleep(105); break;
+      case 'dot': if (fe) { floatAt(fe, ev.s + ' -' + ev.n, 'dot'); fe.dataset.hp -= ev.n; setBar(fe, +fe.dataset.hp, +fe.dataset.max); } await sleep(130); break;
+      case 'phit': floatAt(me, ev.n ? '-' + ev.n : '挡', ev.n ? 'pdmg' : 'blk', -20); if (ev.n) { ui.meHp -= ev.n; setBar(meRow, ui.meHp, G.max); if (!ev.self) bump(app, 'quake'); sfx.phit(); } else sfx.blk(); await sleep(150); break;
+      case 'blk': floatAt(me, '护盾 +' + ev.n, 'blk', -34); sfx.blk(); await sleep(40); break;
+      case 'heal': floatAt(me, '+' + ev.n, 'heal', -20); ui.meHp += ev.n; setBar(meRow, ui.meHp, G.max); sfx.heal(); await sleep(60); break;
+      case 'gold': if (ev.n) { floatAt($('.hud .gold'), '+' + ev.n, 'gold', 30); sfx.gold(); } break;
+      case 'txt': floatAt(ev.p ? me : fe, ev.s, ev.bad ? 'bad' : ev.good ? 'heal' : 'note', ev.p ? -44 : -30); if (ev.bad) sfx.bad(); await sleep(90); break;
+      case 'die': if (fe) { fe.classList.add('dying'); splash(fe, '#d5e6ee', 34); } sfx.die(); await sleep(330); break;
+      case 'foe': if (fe) { bump(fe, 'lunge'); floatAt(fe, ev.name, 'name', -70); } await sleep(300); break;
+      case 'ally': break;
+      case 'spawn': render(); await sleep(200); break;
+      case 'rain': grainRain(ev.isNew ? 90 : 26); if (ev.isNew) { sfx.newc(); banner(`新字<b>${ev.ch}</b>${CH[ev.ch].comps.join('＋')}<small>天雨粟　粟 +${ev.g}　已收进字典</small>`); await sleep(260); } else sfx.gold(); floatAt($('.hud .gold'), '+' + ev.g, 'gold', 30); break;
+      case 'turn': if (ev.n > 1) { sfx.turn(); banner(`第 ${ev.n} 回合`, 'turn'); await sleep(200); } break;
+    }
+  }
+}
+async function flush() { busy = true; await play(B.ev.splice(0)); busy = false; render(); after(); }
+async function doCast(ch) {
+  if (busy || !B || B.over) return;
+  const idxs = sel.slice(), els = idxs.map(i => $(`.hand .card[data-i="${i}"]`));
+  if (!B.cast(idxs, ch, tgi)) { sfx.nope(); bump($('.res'), 'wig'); return; }
+  busy = true; sel = []; els.forEach(e => e && e.classList.add('used'));
+  await play(B.ev.splice(0)); busy = false; render(); await after();
+}
+async function endTurn() {
+  if (busy || !B || B.over || B.pending) return;
+  busy = true; sel = []; hideTip();
+  for (const s of B.endSteps()) { if (s() === false) continue; await play(B.ev.splice(0)); render(); if (B.over) break; }
+  busy = false; render(); await after();
+}
+async function after() {
+  if (!B || !B.over) return;
+  busy = true;
+  if (B.over === 'win') { sfx.win(); await sleep(700); busy = false; const rw = mkReward(G, B); cur = { t: 'reward', rw, kind: B.kind, took: false, relicPick: null }; if (rw.relic) addRelic(G, rw.relic); B = null; go('reward'); }
+  else { sfx.lose(); await sleep(1000); busy = false; endRun(G, false); B = null; go('over'); }
+}
+
+// ── 战后、墨庄、茶寮、典故
+function compCard(c, o) {
+  const syn = synergy(G, c.c), kn = syn.filter(known), un = syn.length - kn.length;
+  return `<button class="pc ${o.taken ? 'taken' : ''}" data-act="${o.act}" data-i="${o.i}" ${o.disabled ? 'disabled' : ''}>
+    <span class="top">${cardHtml(c, 'sm')}<span><p>${descChar(c.c)}</p></span>${o.price != null ? `<span class="price ${G.gold < o.price ? 'no' : ''}">${o.price} 粟</span>` : ''}</span>
+    <p>${syn.length ? `配上你手头的字根，可成 ${syn.length} 字：` : '眼下和你的字根拼不出字。'}</p>${syn.length ? `<span class="syn">${kn.slice(0, 16).join('')}${un ? `<u>${'？'.repeat(Math.min(un, 10))}</u>` : ''}</span>` : ''}</button>`;
+}
+SCR.reward = () => {
+  const rw = cur.rw, need = rw.relics && rw.relics.length && !cur.relicPick;
+  return `<div class="body"><h2>${cur.kind === 'boss' ? '首领散了' : '写毕'}</h2><p class="lead">粟 +${rw.gold}${cur.kind === 'boss' && G.act < 3 ? '　·　生命回复了四成' : ''}</p>
+    ${rw.relic ? `<div class="got">得文房 <b>${RELICS[rw.relic][0]}</b>　${RELICS[rw.relic][1]}</div>` : ''}
+    ${rw.relics && rw.relics.length ? `<h3>它留下的文房 · 取一件</h3><div class="pick">${rw.relics.map((id, i) => `<button class="pc ${cur.relicPick === id ? 'taken' : ''}" data-act="rpick" data-i="${i}" ${cur.relicPick ? 'disabled' : ''}><span class="rn">${RELICS[id][0]}</span><p>${RELICS[id][1]}</p></button>`).join('')}</div>` : ''}
+    <h3>从它身上拆一张字根</h3><div class="pick">${rw.comps.map((c, i) => compCard(c, { act: 'take', i, taken: cur.took === i, disabled: cur.took !== false })).join('')}</div>
+    <div class="foot-bar"><span class="muted">${cur.took === false ? '一张都不拿也行。牌库越薄，越容易凑齐想要的字。' : ''}</span><button class="btn red" data-act="rwdone" ${need ? 'disabled' : ''}>${cur.kind === 'boss' && G.act < 3 ? '翻到下一卷' : '继续'}</button></div></div>`;
+};
+SCR.shop = () => {
+  const s = cur.shop, svc = (k, n, d, p, ok) => `<button class="pc" data-act="svc" data-k="${k}" ${ok && G.gold >= p ? '' : 'disabled'}><span class="top"><span class="rn" style="color:var(--paper)">${n}</span><span class="price ${G.gold < p ? 'no' : ''}">${p} 粟</span></span><p>${d}</p></button>`;
+  return `<div class="body"><h2>墨庄</h2><p class="lead">「都是好字。慢慢看。」</p>
+    <h3>字根</h3><div class="pick">${s.comps.map((c, i) => (c.sold ? '' : compCard(c, { act: 'buy', i, price: c.price, disabled: G.gold < c.price }))).join('') || '<span class="muted">卖完了。</span>'}</div>
+    <h3>文房</h3><div class="pick">${s.relics.map((r, i) => (r.sold ? '' : `<button class="pc" data-act="buyr" data-i="${i}" ${G.gold < r.price ? 'disabled' : ''}><span class="top"><span class="rn">${RELICS[r.id][0]}</span><span class="price ${G.gold < r.price ? 'no' : ''}">${r.price} 粟</span></span><p>${RELICS[r.id][1]}</p></button>`)).join('') || '<span class="muted">卖完了。</span>'}</div>
+    <h3>手艺</h3><div class="pick">${svc('rm', '涂去', '从牌库里删掉一张字根', G.rmCost, G.deck.length > 5)}${svc('up', '朱批', '给一张字根批红：所成之字数值 +25%', G.upCost, G.deck.some(c => !c.up && c.c !== '讹'))}${svc('tea', '吃茶', '回复 15 生命', s.tea, G.hp < G.max)}</div>
+    <div class="foot-bar"><span></span><button class="btn red" data-act="leave">离开</button></div></div>`;
+};
+SCR.rest = () => `<div class="body"><div class="evt"><h2>茶寮</h2><p class="x">路边一间茶寮。灯还亮着，炉上的水刚开。</p><div class="opts">
+  <button class="opt" data-act="rest" data-k="heal"><b>歇息</b>回复 ${restHeal(G)} 生命</button>
+  <button class="opt" data-act="rest" data-k="up" ${G.deck.some(c => !c.up && c.c !== '讹') ? '' : 'disabled'}><b>描红</b>朱批一张字根：所成之字数值 +25%</button>
+  <button class="opt" data-act="rest" data-k="rm" ${G.deck.length > 5 ? '' : 'disabled'}><b>涂改</b>从牌库里删掉一张字根</button></div></div></div>`;
+SCR.event = () => {
+  const ev = cur.ev;
+  return `<div class="body"><div class="evt"><h2>${ev.t}</h2><p class="x">${ev.x}</p>${cur.out != null ? `<div class="out">${cur.out}</div><div class="center"><button class="btn red" data-act="leave">继续</button></div>`
+    : `<div class="opts">${ev.o.map((o, i) => `<button class="opt" data-act="ev" data-i="${i}" ${o.ok && !o.ok(G) ? 'disabled' : ''}><b>${o.l}</b>${o.d}</button>`).join('')}</div>`}</div></div>`;
+};
+
+// ── 字典
+SCR.dict = () => {
+  const n = dictCount(), ch = ui.dch; let det = `<div class="big u">？</div><div><p>点一个字看它的写法。</p><p class="muted">灰的是还没写过的字。写出来一次，就永远收在这里。</p></div>`;
+  if (ch) { const d = CH[ch], k = META.dict[ch], h = META.hint[ch];
+    det = k || h ? `<div class="big el-${d.el}">${ch}</div><div><p><b style="color:var(--paper)">${d.comps.join(' ＋ ')}</b>${d.el ? `　<span style="color:var(--${d.el})">${ELN[d.el]}</span>` : ''}　<span class="muted">${d.note}</span></p><p>${descChar(ch)}</p><p class="muted">${k ? '写过 ' + k + ' 次' : '听说过，还没亲手写过'}</p></div>`
+      : `<div class="big u">？</div><div><p>还不认得。</p><p class="muted">${d.n} 个字根，其中一个是「${d.comps[(ch.charCodeAt(0) + d.n) % d.n]}」。</p></div>`; }
+  const tiles = k => CHARS.filter(c => CH[c[0]].n === k).map(c => { const kn = META.dict[c[0]], h = META.hint[c[0]]; return `<button class="dt ${kn ? 'k' : h ? 'h' : ''} el-${CH[c[0]].el} ${ch === c[0] ? 'on' : ''}" data-act="dsel" data-ch="${c[0]}">${kn || h ? c[0] : '？'}</button>`; }).join('');
+  return `<div class="body"><div class="foot-bar" style="margin:0"><h2>字典</h2><button class="btn" data-act="dback">返回</button></div>
+    <p class="lead">识字 ${n} / ${TOTAL}</p><div class="bar"><i style="width:${(100 * n) / TOTAL}%"></i></div>
+    <div class="ddetail">${det}</div><h3>二部字</h3><div class="dgrid">${tiles(2)}</div><h3>三部字</h3><div class="dgrid">${tiles(3)}</div></div>`;
+};
+
+SCR.over = () => {
+  const w = G.over === 'win', s = G.st, n = dictCount(), nl = G.newList || [];
+  const unl = KITS.filter(k => k.need > 0 && k.need <= n && k.need > n - s.newc);
+  return `<div class="over ${w ? 'win' : ''}"><h1>${w ? '字成' : '墨干了'}</h1>
+    <p class="lead">${w ? '「忘」散去了。纸上的字，一个都没少。' : `止于${ACTS[G.act][0]}「${ACTS[G.act][1]}」，第 ${G.floor} 步。`}</p>
+    <div class="stats"><div><b>${s.chars}</b>写下的字</div><div><b>${Object.keys(G.seenRun).length}</b>不同的字</div><div><b>${s.newc}</b>新识的字</div><div><b>${s.kills}</b>写哭的鬼</div><div><b>${n} / ${TOTAL}</b>字典</div></div>
+    ${nl.length ? `<p class="muted">这一局新识的字</p><div class="newc">${nl.join('')}</div>` : ''}
+    ${unl.map(k => `<div class="got">解锁新笔 <b>${k.n}</b>　${k.d}</div>`).join('')}
+    ${w && G.asc < 9 && META.asc === G.asc + 1 ? `<div class="got">墨阶 <b>${META.asc}</b> 已开　${ASC[META.asc]}</div>` : ''}
+    <p class="muted">${KITS[G.kit].n} · ${BOONS[G.boon][0]}${G.asc ? ' · 墨阶 ' + G.asc : ''}　种子 ${G.seed}</p>
+    <div class="row" style="justify-content:center;margin-top:6px"><button class="btn red" data-act="new">再写一局</button><button class="btn" data-act="dict">字典</button><button class="btn" data-act="home">回封面</button></div></div>`;
+};
+
+// ───────── 动作
+function toMap() { cur = {}; saveRun(G); go('map'); }
+const ACT = {
+  close: closeModal, help, deck: deckModal, menu: menuModal,
+  mute() { META.mute = !META.mute; saveMeta(); if (modalEl.classList.contains('on')) menuModal(); else render(); },
+  home() { closeModal(); go('title'); },
+  new() { closeModal(); openPick(); },
+  resume() { G = loadRun(); if (!G) return render(); B = null; cur = {}; go('map'); },
+  quit() { closeModal(); endRun(G, false); B = null; go('over'); },
+  pkit(d) { ui.pick.kit = +d.i; sfx.tap(+d.i); render(); },
+  pboon(d) { ui.pick.boon = d.id; sfx.tap(3); render(); },
+  asc(d) { ui.pick.asc = Math.max(0, Math.min(META.asc, ui.pick.asc + +d.d)); render(); },
+  start() { const p = ui.pick; if (p.kit == null || !p.boon) return; META.lastAsc = p.asc; saveMeta(); clearRun(); G = newRun({ kit: p.kit, boon: p.boon, asc: p.asc, seed: QS.has('seed') ? +QS.get('seed') : undefined }); G.newList = []; B = null; toMap(); },
+  go(d) {
+    if (busy) return; const v = visit(G, d.id); cur = v; sel = []; tgi = 0;
+    if (v.t === 'battle') { B = v.B; ui.sorted = -1; go('battle'); const e = B.en[0]; if (e.d.boss || e.d.elite) banner(`<b>${e.ch}</b><small>${e.n}</small>`); if (!META.tut) { META.tut = 1; saveMeta(); help(); } }
+    else { cur.out = null; go(v.t); }
+  },
+  card(d) {
+    if (busy || !B) return; const i = +d.i;
+    if (B.pending) { if (B.choose(i)) flush(); else sfx.nope(); return; }
+    const c = B.hand[i]; if (!c || c.sealed) { sfx.nope(); return; }
+    const k = sel.indexOf(i); if (k >= 0) sel.splice(k, 1); else { if (sel.length >= 3) sel.shift(); sel.push(i); }
+    sfx.tap(i); render();
+  },
+  chip(d) { if (busy) return; sel = d.i.split(',').map(Number); sfx.tap(sel[0]); render(); },
+  foe(d) { if (busy) return; tgi = +d.i; render(); },
+  cast(d) { doCast(d.ch); },
+  end() { endTurn(); },
+  take(d) { if (cur.took !== false) return; const c = cur.rw.comps[+d.i]; G.deck.push({ c: c.c, up: c.up }); cur.took = +d.i; sfx.tap(4); render(); },
+  rpick(d) { if (cur.relicPick) return; const id = cur.rw.relics[+d.i]; addRelic(G, id); cur.relicPick = id; sfx.gold(); render(); },
+  rwdone() { if (cur.kind === 'boss') { if (G.act === 3) { endRun(G, true); sfx.win(); grainRain(160); return go('over'); } nextAct(G); } toMap(); },
+  buy(d) { const c = cur.shop.comps[+d.i]; if (c.sold || G.gold < c.price) return; G.gold -= c.price; G.deck.push({ c: c.c, up: c.up }); c.sold = true; sfx.gold(); render(); },
+  buyr(d) { const r = cur.shop.relics[+d.i]; if (r.sold || G.gold < r.price) return; G.gold -= r.price; addRelic(G, r.id); r.sold = true; sfx.gold(); render(); },
+  svc(d) {
+    const k = d.k, s = cur.shop;
+    if (k === 'tea') { if (G.gold < s.tea) return; G.gold -= s.tea; G.hp = Math.min(G.max, G.hp + 15); sfx.heal(); render(); }
+    else if (k === 'rm') pickCard('涂去哪一张', null, i => { if (G.gold < G.rmCost) return; G.gold -= G.rmCost; G.rmCost += 20; G.deck.splice(i, 1); render(); });
+    else pickCard('朱批哪一张', c => !c.up && c.c !== '讹', i => { if (G.gold < G.upCost) return; G.gold -= G.upCost; G.upCost += 15; G.deck[i].up = true; render(); });
+  },
+  rest(d) {
+    if (d.k === 'heal') { G.hp = Math.min(G.max, G.hp + restHeal(G)); sfx.heal(); toMap(); }
+    else if (d.k === 'up') pickCard('描哪一张', c => !c.up && c.c !== '讹', i => { G.deck[i].up = true; toMap(); });
+    else pickCard('涂掉哪一张', null, i => { G.deck.splice(i, 1); toMap(); });
+  },
+  ev(d) { const o = cur.ev.o[+d.i]; if (o.ok && !o.ok(G)) return; if (o.pick) pickCard(o.l, o.pf, i => { cur.out = o.f(G, i); render(); }); else { cur.out = o.f(G); render(); } },
+  leave() { toMap(); },
+  pk(d) { const cb = ui.pickCb; closeModal(); if (cb) cb(+d.i); },
+  dict() { closeModal(); ui.dictBack = scr === 'dict' ? ui.dictBack : scr; ui.dch = null; go('dict'); },
+  dback() { go(ui.dictBack || 'title'); },
+  dsel(d) { ui.dch = d.ch; const b = $('.body'), t = b ? b.scrollTop : 0; render(); if ($('.body')) $('.body').scrollTop = t; },
+};
+document.addEventListener('click', e => { const el = e.target.closest && e.target.closest('[data-act]'); if (!el || el.disabled) return; const f = ACT[el.dataset.act]; if (f) f(el.dataset, el); });
+document.addEventListener('keydown', e => {
+  if (modalEl.classList.contains('on')) { if (e.key === 'Escape' || e.key === 'Enter') closeModal(); return; }
+  if (scr !== 'battle' || !B || busy) return;
+  if (/^[0-9]$/.test(e.key)) { const i = e.key === '0' ? 9 : +e.key - 1; if (B.hand[i]) ACT.card({ i }); }
+  else if (e.key === 'Enter') { const r = $('.res[data-act="cast"]:not([disabled])'); if (r) doCast(r.dataset.ch); }
+  else if (e.key === ' ' || e.key === 'e') { e.preventDefault(); endTurn(); }
+  else if (e.key === 'Escape') { sel = []; render(); }
+  else if (e.key === 'ArrowRight' || e.key === 'ArrowLeft' || e.key === 'Tab') { e.preventDefault(); const a = B.en.map((x, i) => i).filter(i => B.en[i].alive), k = a.indexOf(tgi), d = e.key === 'ArrowLeft' ? -1 : 1; tgi = a[(k + d + a.length) % a.length]; render(); }
+});
+
+// ───────── 背景、启动
+(function () { const bg = $('#bg'), cs = '鬼魂魄魅魔魇魃魍魉魑忘妖怨'; let h = ''; for (let i = 0; i < 12; i++) h += `<i style="left:${(i * 8.3 + Math.random() * 5).toFixed(1)}%;top:${(8 + Math.random() * 78).toFixed(1)}%;animation-delay:-${(Math.random() * 26).toFixed(1)}s;font-size:${60 + ((Math.random() * 70) | 0)}px">${cs[i]}</i>`; bg.innerHTML = h; })();
+
+async function autoPlay() { // ?auto：机器人从界面上把一整局点完，冒烟测试用
+  SPEED = 0;
+  for (let n = 0; n < 6000; n++) {
+    await new Promise(r => setTimeout(r, 0)); if (busy) continue;
+    if (modalEl.classList.contains('on')) { const b = $('#modal [data-act="pk"]:not([disabled])') || $('#modal [data-act="close"]'); b.click(); continue; }
+    if (scr === 'title') ACT.new();
+    else if (scr === 'pick') { ui.pick.kit = ui.pick.kits[n % ui.pick.kits.length]; ui.pick.boon = ui.pick.boons[0]; ACT.start(); }
+    else if (scr === 'map') { const c = choices(G); ACT.go({ id: c[(Math.random() * c.length) | 0] }); }
+    else if (scr === 'battle') {
+      if (B.pending) { ACT.card({ i: B.hand.findIndex(c => c.c !== '讹') }); continue; }
+      const o = B.canCast() && B.options().filter(() => B.costOf() <= B.ink).sort((a, b) => CH[b.ch].n - CH[a.ch].n)[0];
+      if (o) { sel = o.idxs.slice(); tgi = B.en.findIndex(e => e.alive); render(); await doCast(o.ch); } else await endTurn();
+    } else if (scr === 'reward') { if (cur.rw.relics && cur.rw.relics.length && !cur.relicPick) ACT.rpick({ i: 0 }); if (cur.took === false) ACT.take({ i: 0 }); ACT.rwdone(); }
+    else if (scr === 'shop') { const b = $('[data-act="buy"]:not([disabled])'); if (b && n % 2) b.click(); else ACT.leave(); }
+    else if (scr === 'rest') ACT.rest({ k: ['heal', 'up', 'rm'][n % 3] });
+    else if (scr === 'event') { if (cur.out != null) ACT.leave(); else { const ok = cur.ev.o.map((o, i) => i).filter(i => !cur.ev.o[i].ok || cur.ev.o[i].ok(G)); ACT.ev({ i: ok[n % ok.length] }); } }
+    else if (scr === 'over') { window.__done = { win: G.over === 'win', act: G.act, floor: G.floor, chars: G.st.chars }; return; }
+  }
+  window.__done = { stuck: scr };
+}
+function demo(what) { // ?demo=battle|boss|map|reward|shop|rest|event|pick|over：直接摆出某个画面，截图用
+  const seed = +(QS.get('seed') || 7), kit = +(QS.get('kit') || 0);
+  if (what === 'pick') return openPick();
+  G = newRun({ seed, kit, boon: QS.get('boon') || 'bowen' }); G.newList = [];
+  if (what === 'map') { visit(G, choices(G)[0]); visit(G, choices(G)[0]); return go('map'); }
+  if (what === 'battle' || what === 'boss' || what === 'reward' || what === 'over') {
+    if (what === 'boss') { G.act = 2; G.map = genMap(G); G.relics.push('langhao', 'zitie', 'huimo'); G.deck.push({ c: '日' }, { c: '月', up: true }, { c: '心' }); }
+    const v = visit(G, what === 'boss' ? 'boss' : choices(G)[1] || choices(G)[0]); B = v.B; cur = v; scr = 'battle';
+    if (what === 'battle') { B.block(6); B.fst(B.en[0], 'burn', 4); B.fst(B.en[0], 'vul', 2); B.allies.push('猫'); B.ev = []; B.hand.sort(byComp); ui.sorted = B.turn; const o = B.options().filter(o => CH[o.ch].n === 2)[0]; if (o) sel = o.idxs.slice(); }
+    if (what === 'reward') { B.en.forEach(e => B.kill(e)); B.ev = []; cur = { t: 'reward', rw: mkReward(G, B), kind: 'normal', took: false }; B = null; scr = 'reward'; }
+    if (what === 'over') { B = null; G.st = { turns: 40, kills: 23, chars: 88, newc: 3 }; G.seenRun = { 明: 1, 炎: 1, 休: 1 }; G.newList = ['明', '炎', '休']; endRun(G, false); scr = 'over'; }
+    return render();
+  }
+  if (what === 'shop') { cur = { t: 'shop', shop: mkShop(G) }; G.gold = 120; return go('shop'); }
+  if (what === 'rest') return go('rest');
+  if (what === 'event') { cur = { t: 'event', ev: EVENTS[+(QS.get('i') || 0)], out: null }; return go('event'); }
+  if (what === 'dict') { ui.dictBack = 'title'; return go('dict'); }
+}
+if (QS.has('demo')) demo(QS.get('demo')); else render();
+if (QS.has('auto')) autoPlay();
+</script>
+</body>
+</html>
